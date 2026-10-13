@@ -14,6 +14,7 @@ import ShareBar from "../components/article/ShareBar.astro";
 import Sources from "../components/article/Sources.astro";
 import SupportingLinks from "../components/article/SupportingLinks.astro";
 import { editorialDisclaimer } from "../lib/article-display";
+import { placeholderPageNote } from "../lib/placeholder-marks";
 import { placeholderNotice } from "../lib/preview-mode";
 import { correctionsForPath } from "../lib/corrections";
 import { canonicalUrl, site } from "../data/site";
@@ -79,7 +80,7 @@ const below = [
       {
         model.demonstration && (
           <p class="design-notice">
-            {model.designNotice ?? placeholderNotice}
+            {placeholderPageNote(model.collection, model.id, model.designNotice ?? placeholderNotice)}
           </p>
         )
       }

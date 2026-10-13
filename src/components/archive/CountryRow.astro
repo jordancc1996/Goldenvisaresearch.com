@@ -1,5 +1,6 @@
 ---
 import { isoDate } from "../../lib/article-display";
+import { placeholderMark } from "../../lib/placeholder-marks";
 
 interface Props {
   href: string;
@@ -12,9 +13,11 @@ interface Props {
 }
 
 const { href, name, region, programCountLabel, statusLabels, verifiedLabel, verifiedOn } = Astro.props;
+const mark = placeholderMark("countries", href.split("/").pop() ?? "");
 ---
 
 <li class="country-row" data-country-row data-name={name} data-region={region}>
+  {mark && <p class="type-kicker">{mark}</p>}
   <h3 class="story-title">
     <a href={href}>{name}</a>
   </h3>

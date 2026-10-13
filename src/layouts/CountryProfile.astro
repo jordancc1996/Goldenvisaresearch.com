@@ -7,6 +7,7 @@ import Figure from "../components/article/Figure.astro";
 import RelatedCoverage from "../components/article/RelatedCoverage.astro";
 import Sources from "../components/article/Sources.astro";
 import { editorialDisclaimer, formatArticleDate, isoDate } from "../lib/article-display";
+import { markedLabel, placeholderPageNote } from "../lib/placeholder-marks";
 import { correctionsForPath } from "../lib/corrections";
 import type { CountryProfile } from "../lib/load-country";
 import { canonicalUrl, site } from "../data/site";
@@ -46,7 +47,14 @@ const disclaimer = editorialDisclaimer(profile.demonstration);
   {schemaJson && <script is:inline type="application/ld+json" set:html={schemaJson} />}
   <article class="article-shell shell-wrap" data-pagefind-body={profile.indexable ? true : undefined}>
     <header class="article-header">
-      <p class="type-kicker article-kicker">Country</p>
+      <p class="type-kicker article-kicker">{markedLabel("countries", profile.id, "Country")}</p>
+      {
+        profile.demonstration && (
+          <p class="design-notice">
+            {placeholderPageNote("countries", profile.id, "This profile is not published reporting.")}
+          </p>
+        )
+      }
       <h1 class="article-title">{profile.name}</h1>
       <p class="article-dek">{profile.summary}</p>
       <ul class="article-facts">

@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import { isoDate } from "../../lib/article-display";
+import { markedLabel } from "../../lib/placeholder-marks";
 import { buildDirectoryRows, sortDirectory } from "../../lib/directory";
 import { site } from "../../data/site";
 import { routeIndexable } from "../../lib/indexability";
@@ -36,7 +37,7 @@ const description = "Programs are stored as one record each. Facts are read from
         <ol class="directory-index">
           {rows.map((row) => (
             <li>
-              <p class="related-kicker">{row.countryName}</p>
+              <p class="related-kicker">{markedLabel("programs", row.programId, row.countryName)}</p>
               <h2 class="directory-index-title">
                 <a href={row.programHref}>{row.programName}</a>
               </h2>

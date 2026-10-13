@@ -1,5 +1,6 @@
 ---
 import { formatArticleDate, isoDate } from "../../lib/article-display";
+import { markedLabel } from "../../lib/placeholder-marks";
 import type { DirectoryRow } from "../../lib/directory";
 import EditionHeading from "./EditionHeading.astro";
 
@@ -41,11 +42,11 @@ const showingDrafts = verified.length === 0 && recent.length > 0;
               <li>
                 <span>
                   <span class="home-field">Country</span>
-                  <a href={row.countryHref}>{row.countryName}</a>
+                  <a href={row.countryHref}>{markedLabel("countries", row.countryId, row.countryName)}</a>
                 </span>
                 <span>
                   <span class="home-field">Program</span>
-                  <a href={row.programHref}>{row.programName}</a>
+                  <a href={row.programHref}>{markedLabel("programs", row.programId, row.programName)}</a>
                 </span>
                 <span>
                   <span class="home-field">Status</span>

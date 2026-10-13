@@ -4,6 +4,7 @@ import AuthorProfile from "../../components/author/AuthorProfile.astro";
 import { canonicalUrl, site } from "../../data/site";
 import { documentTitle, jsonLd, personSchema } from "../../lib/metadata";
 import { categoryLabel } from "../../lib/article-display";
+import { markedLabel, placeholderPageNote } from "../../lib/placeholder-marks";
 import { showsDemonstrationContent } from "../../lib/preview-mode";
 import { visibleAuthorInProduction } from "../../lib/content";
 import { resolveContentImage } from "../../lib/load-article";
@@ -39,7 +40,7 @@ const articles = authored.map((entry) => ({
   title: entry.data.title,
   summary: entry.data.description,
   category: entry.data.category ?? "news",
-  categoryLabel: categoryLabel(entry.data.category, entry.kind === "reports" ? "Research" : "News"),
+  categoryLabel: markedLabel(entry.kind, entry.id, categoryLabel(entry.data.category, entry.kind === "reports" ? "Research" : "News")),
   publishedAt: entry.data.publishedAt,
   countries: [],
 }));
@@ -85,6 +86,12 @@ const schemaJson =
       reviewedOn: entry.data.review!.reviewedOn,
     }))}
     indexed={indexable}
+    kicker={markedLabel("authors", author.id, "Author")}
+    note={
+      author.data.material === "demonstration"
+        ? placeholderPageNote("authors", author.id, "This author record is not a journalist and it states no credential.")
+        : undefined
+    }
   >
     <Content />
   </AuthorProfile>

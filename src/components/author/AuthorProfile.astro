@@ -19,15 +19,18 @@ interface Props {
   articles: ArchiveStory[];
   reviews: { href: string; title: string; reviewedOn: Date }[];
   indexed?: boolean;
+  kicker?: string;
+  note?: string;
 }
 
-const { name, role, summary, expertise, linkedin, disclosures, hasBody, photo, articles, reviews, indexed = false } = Astro.props;
+const { name, role, summary, expertise, linkedin, disclosures, hasBody, photo, articles, reviews, indexed = false, kicker = "Author", note } = Astro.props;
 const photoSrc = photo && isImageMetadata(photo.src) ? photo.src : undefined;
 ---
 
 <div class="archive-page shell-wrap author-profile" data-pagefind-body={indexed ? true : undefined}>
   <header class="article-header">
-    <p class="type-kicker article-kicker">Author</p>
+    <p class="type-kicker article-kicker">{kicker}</p>
+    {note && <p class="design-notice">{note}</p>}
     <h1 class="article-title">{name}</h1>
     <p class="author-role">{role}</p>
     <p class="article-dek">{summary}</p>

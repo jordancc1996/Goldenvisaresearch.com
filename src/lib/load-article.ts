@@ -9,6 +9,7 @@ import {
   reviewNote,
   verifiedLabel,
 } from "./article-display";
+import { markedLabel } from "./placeholder-marks";
 import { showsDemonstrationContent } from "./preview-mode";
 import {
   entryHref,
@@ -295,10 +296,13 @@ async function coverageFor(current: {
       collection,
       href: entryHref(collection, entry.id),
       title: entry.data.title,
-      category:
+      category: markedLabel(
+        collection,
+        entry.id,
         collection === "press"
           ? "Press release"
           : categoryLabel(entry.data.category, collection === "reports" ? "Research" : "News"),
+      ),
       publishedAt: entry.data.publishedAt,
       topic: entry.data.topic,
       authorIds: (entry.data.authors ?? []).map(referenceId),
@@ -363,7 +367,7 @@ async function loadNews(id: string): Promise<ArticleModel> {
   return {
     collection: "news",
     id: entry.id,
-    category: categoryLabel(entry.data.category, "News"),
+    category: markedLabel("news", entry.id, categoryLabel(entry.data.category, "News")),
     title: entry.data.title,
     dek: entry.data.description,
     authors: await readAuthors(entry.data.authors),
@@ -402,7 +406,7 @@ async function loadReport(id: string): Promise<ArticleModel> {
   return {
     collection: "reports",
     id: entry.id,
-    category: categoryLabel(entry.data.category, "Research"),
+    category: markedLabel("reports", entry.id, categoryLabel(entry.data.category, "Research")),
     title: entry.data.title,
     dek: entry.data.description,
     authors: await readAuthors(entry.data.authors),
@@ -466,7 +470,7 @@ async function loadProgram(id: string): Promise<ArticleModel> {
   return {
     collection: "programs",
     id: entry.id,
-    category: categoryLabel(data.category, "Program"),
+    category: markedLabel("programs", entry.id, categoryLabel(data.category, "Program")),
     title: data.title,
     dek: data.description,
     authors: await readAuthors(data.authors),
@@ -566,7 +570,7 @@ async function loadPress(id: string): Promise<ArticleModel> {
   return {
     collection: "press",
     id: entry.id,
-    category: "Press release",
+    category: markedLabel("press", entry.id, "Press release"),
     title: data.title,
     dek: data.description,
     authors: await readAuthors(data.authors),
@@ -588,7 +592,7 @@ async function loadPress(id: string): Promise<ArticleModel> {
     indexable: searchEligible(entry),
     showSources: true,
     supporting,
-    designNotice: data.material === "demonstration" ? "Placeholder. This release is not a published announcement." : undefined,
+    designNotice: data.material === "demonstration" ? "This release is not a published announcement." : undefined,
     release: {
       dateline: data.dateline,
       organization: data.organization,

@@ -53,7 +53,9 @@ const article = read(path.join(dist, "news", "design-preview-lead.html"));
 expect(article.includes("<img"), "article hero");
 expect(article.includes('content="noindex, nofollow"'), "article noindex");
 expect(article.includes("editorial-main"), "shared article layout");
-expect(article.includes("Placeholder. This page is not published reporting."), "article placeholder label");
+expect(article.includes("Placeholder 01."), "article placeholder number");
+expect(article.includes("src/content/news/design-preview-lead.md"), "article names its file");
+expect(article.includes("not published reporting."), "article placeholder label");
 
 const files = walk(dist);
 const html = files.filter((file) => file.endsWith(".html"));

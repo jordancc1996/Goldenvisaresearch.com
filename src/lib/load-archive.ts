@@ -12,6 +12,7 @@ import {
   type ResearchArchiveSlug,
 } from "./archive";
 import { referenceId, sortByDate } from "./content";
+import { markedLabel } from "./placeholder-marks";
 import { showsDemonstrationContent } from "./preview-mode";
 import { researchTypeLabels, type ResearchType } from "./content-schema";
 
@@ -53,7 +54,7 @@ export async function loadPublishedNews(): Promise<ArchiveStory[]> {
     title: entry.data.title,
     summary: entry.data.description,
     category: entry.data.category ?? "news",
-    categoryLabel: categoryLabel(entry.data.category, "News"),
+    categoryLabel: markedLabel("news", entry.id, categoryLabel(entry.data.category, "News")),
     publishedAt: entry.data.publishedAt,
     updatedAt: entry.data.updatedAt,
     countries: linkedCountries(entry.data.countries, names),
@@ -75,7 +76,11 @@ export async function loadPublishedReports(): Promise<ArchiveStory[]> {
       title: entry.data.title,
       summary: entry.data.description,
       category: entry.data.category ?? "research",
-      categoryLabel: researchType ? researchTypeLabels[researchType] : categoryLabel(entry.data.category, "Research"),
+      categoryLabel: markedLabel(
+        "reports",
+        entry.id,
+        researchType ? researchTypeLabels[researchType] : categoryLabel(entry.data.category, "Research"),
+      ),
       publishedAt: entry.data.publishedAt,
       updatedAt: entry.data.updatedAt,
       countries: linkedCountries(entry.data.countries, names),
@@ -111,7 +116,7 @@ export async function loadPublishedPress(): Promise<HomeStory[]> {
     title: entry.data.title,
     summary: entry.data.description,
     category: "press",
-    categoryLabel: "Press release",
+    categoryLabel: markedLabel("press", entry.id, "Press release"),
     publishedAt: entry.data.publishedAt,
     updatedAt: entry.data.updatedAt,
     countries: linkedCountries(entry.data.countries, names),
