@@ -1,0 +1,13 @@
+---
+import ResearchArchive from "../../../../components/archive/ResearchArchive.astro";
+import { reportPagePaths } from "../../../../lib/load-archive";
+
+export async function getStaticPaths() {
+  return reportPagePaths("market-research");
+}
+
+const page = Number(Astro.params.page);
+if (!Number.isInteger(page) || page < 2) throw new Error("Missing market research page");
+---
+
+<ResearchArchive type="market-research" page={page} />

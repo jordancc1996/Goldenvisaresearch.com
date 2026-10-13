@@ -1,0 +1,33 @@
+---
+import TrustPage from "../components/trust/TrustPage.astro";
+import { routeIndexable } from "../lib/indexability";
+---
+
+<TrustPage
+  title="Privacy"
+  description="Privacy for this site. No form provider, analytics, or lead sharing is configured."
+  noindex={!routeIndexable("/privacy")}
+>
+  <h2>What this site is</h2>
+  <p>
+    Golden Visa Research is a static website. The pages are files. The site does not run an account system.
+  </p>
+  <h2>Data destinations in this build</h2>
+  <p>
+    Fonts are files served with the site: Source Serif 4 and Inter, in Latin and Latin Extended. There is no analytics script, no advertising cookie set by the site code, and no embedded video or social widget.
+  </p>
+  <p>
+    Newsletter, contact, and correction forms have no form provider. Their endpoints are empty. Submitting one does not send the fields to Formspree or to any other company. No newsletter list exists.
+  </p>
+  <p>
+    No commercial introduction and no lead-sharing arrangement are recorded. The forms do not ask for a LinkedIn profile.
+  </p>
+  <h2>Separate choices</h2>
+  <p>
+    A newsletter subscription asks for an email address and a separate confirmation that the address may be used for the newsletter. Sending a contact message or a correction report does not opt the sender into that list.
+  </p>
+  <h2>What is not recorded</h2>
+  <p>
+    No legal entity, postal address, privacy contact, retention period, or hosting contract is recorded. This page does not copy another organization's privacy policy. If a Formspree form ID is approved later, the fields on that form would go to Formspree, and this page would have to name that destination before the form is allowed to submit.
+  </p>
+</TrustPage>

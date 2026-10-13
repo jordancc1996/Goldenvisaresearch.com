@@ -1,0 +1,17 @@
+---
+import TrustPage from "../components/trust/TrustPage.astro";
+import { routeIndexable } from "../lib/indexability";
+---
+
+<TrustPage title="Page Not Found" description="This address is not a page on Golden Visa Research." noindex={!routeIndexable("/404")}>
+  <p>This address is not a page on the site.</p>
+  <p>
+    <a class="text-link" href="/">Home</a>
+    {" · "}
+    <a class="text-link" href="/news">News</a>
+    {" · "}
+    <a class="text-link" href="/reports">Research</a>
+    {" · "}
+    <a class="text-link" href="/countries">Countries</a>
+  </p>
+</TrustPage>

@@ -1,0 +1,42 @@
+---
+description: First-content publishing workflow for Golden Visa Research
+alwaysApply: true
+---
+
+# Publishing workflow
+
+Do not publish a news item, report, country profile, program record, author, or correction until every step below is done. Demonstration files in `src/content` stay drafts. Do not invent a statistic, date, author, investment amount, or meta description number to fill a field.
+
+Country files supply the country name, summary, region, overview, sources, and verification date. Program files supply the minimum investment, currency, investment routes, government fees, status, and program verification date. Profiles, the tracker, summaries, and generated files read those records through `src/lib/publishing.ts`. Do not copy an investment figure into a template, a country file, or a generated file. Minimum investment and government fees stay separate. Do not add them into a total. Unknown, unverified, and unpublished amounts stay labeled. They never display as `$0`.
+
+The HTML page is authoritative. `llms.txt`, `content-index.json`, and Markdown copies are generated from the same published records. Do not keep a second factual copy.
+
+## Required sequence
+
+1. Start from an approved source. A published record needs at least one https source that is not a placeholder. Verify every consequential factual claim against that source.
+2. State the page purpose and one informational search intent. Run the cannibalization check before a new article. Record the slug in `docs/knowledge/cannibalization-guard.md`.
+3. Leave unknown program values as `unknown`, `unverified`, or `unpublished`. Do not guess a fact to fill the record.
+4. Place the primary keyword in the title, meta title, meta description, slug, and first sentence. Do this in normal sentences. If no verified number or date exists, do not invent one for the description.
+5. Use title case for the H1. Use sentence case for H2 through H6. Keep stored headlines unchanged when the route is a story.
+6. Name a verified author. The author is a published author record. Do not invent a person. If the publication itself is the author, use a published author record for the publication. Set `publishedAt`. Set `updatedAt` only when the file changes, and never earlier than `publishedAt`. A reviewer and review date are separate from the author. Structured data names the publication as the publisher.
+7. Use WebP or AVIF for a raster image. A published image needs alt text, a caption, and a credit. Set the width and height. Load the image eagerly. Do not use lazy loading.
+8. Set one topic only when it matches the page. Associate the record with a published country profile when the page is about that country. Name only countries that have a published profile.
+9. Link only to a published page that is relevant. If none exists, show the name or omit the link.
+10. Match the title, description, dates, and schema to the visible text. Do not add comparison, ranking, recommendation, or breadcrumb markup.
+11. Run `npm run test:content`, `npm run check`, `npm run build`, and `npm run test:seo`. The build regenerates the sitemap, RSS feed, news sitemap, search index, `llms.txt`, `content-index.json`, and Markdown copies. Drafts, fixtures, and utility pages stay out of the production pages, schema, feeds, search, sitemaps, and machine-readable records.
+
+`draft: false` with `material: reported` and completed verification is the published state. `site.origin` must be set before a page can be indexed. Do not invent a canonical URL while the origin is unset.
+
+## Editorial article format
+
+News, research reports, program articles, and press releases use one layout: `ArticleLayout` and the components under `src/components/article/`. Do not copy page markup into an individual article. Authors supply fields and Markdown or MDX. They do not restyle the page.
+
+The reading column stays at most 680px. On wide screens a sidebar sits beside the hero and body. It shows the author, then related coverage, and a table of contents only for reports. The sidebar is not sticky. Below the article, show more from the author, more on the topic, and more on the country only when those groups have eligible records.
+
+The newsletter module is inserted after the third top-level paragraph when the article has at least six paragraphs. Set `newsletter: false` to omit it, or `newsletterAfter` to move it. Do not place it inside a list, table, quotation, or figure. The module must not say that a subscription is stored unless `site.forms.newsletter` is configured.
+
+Share links use a canonical URL. While `site.origin` is unset, the share controls stay preview-only. Do not add a tracking script for sharing.
+
+Press releases use the same layout. The press room archive is `/press`. An individual release is `/press/[slug]`. The archive lists published releases only and says that none have been published when the list is empty. It stays out of the index until a published release exists and the canonical origin is configured. Do not add a release to the news feed. A release has no journalist byline unless a verified author is supplied. The issuing organization, boilerplate, dateline, and media contact appear only when those fields are supplied. Do not canonicalize a release to a supporting article.
+
+Development previews stay `draft: true` and `material: demonstration`. They stay out of production HTML, feeds, search, the sitemap, and the machine-readable files.

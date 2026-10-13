@@ -1,0 +1,17 @@
+---
+interface Props {
+  title: string;
+  labelledby: string;
+  href?: string;
+  linkLabel?: string;
+}
+
+const { title, labelledby, href, linkLabel = "View all" } = Astro.props;
+---
+
+<div class="edition-heading">
+  <div class="edition-heading-row">
+    <h2 id={labelledby}>{title}</h2>
+    {href && <a href={href}>{linkLabel}</a>}
+  </div>
+</div>

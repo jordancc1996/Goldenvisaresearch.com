@@ -1,0 +1,26 @@
+---
+import { documentTitle } from "../../lib/metadata";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/article.css";
+import "../../styles/trust.css";
+
+interface Props {
+  title: string;
+  heading?: string;
+  description: string;
+  noindex?: boolean;
+}
+
+const { title, heading = title, description, noindex = false } = Astro.props;
+---
+
+<BaseLayout title={documentTitle(title)} description={description} noindex={noindex}>
+  <article class="trust-page shell-wrap">
+    <header class="article-header">
+      <h1 class="article-title">{heading}</h1>
+    </header>
+    <div class="trust-body">
+      <slot />
+    </div>
+  </article>
+</BaseLayout>

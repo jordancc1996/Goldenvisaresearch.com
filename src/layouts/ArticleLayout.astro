@@ -1,0 +1,181 @@
+---
+import { getCollection } from "astro:content";
+import AuthorModule from "../components/article/AuthorModule.astro";
+import ArticleHeader from "../components/article/ArticleHeader.astro";
+import ArticleToc from "../components/article/ArticleToc.astro";
+import CoverageList from "../components/article/CoverageList.astro";
+import CorrectionsList from "../components/trust/CorrectionsList.astro";
+import DesignPlaceholder from "../components/article/DesignPlaceholder.astro";
+import Figure from "../components/article/Figure.astro";
+import ProgramGuide from "../components/article/ProgramGuide.astro";
+import ReleaseNote from "../components/article/ReleaseNote.astro";
+import ReportSections from "../components/article/ReportSections.astro";
+import ShareBar from "../components/article/ShareBar.astro";
+import Sources from "../components/article/Sources.astro";
+import SupportingLinks from "../components/article/SupportingLinks.astro";
+import { editorialDisclaimer } from "../lib/article-display";
+import { correctionsForPath } from "../lib/corrections";
+import { canonicalUrl, site } from "../data/site";
+import { articleSchema, documentTitle, jsonLd } from "../lib/metadata";
+import type { ArticleModel } from "../lib/load-article";
+import BaseLayout from "./BaseLayout.astro";
+import "../styles/article.css";
+
+interface Props {
+  model: ArticleModel;
+}
+
+const { model } = Astro.props;
+const canonical = canonicalUrl(Astro.url.pathname);
+const corrections = correctionsForPath(await getCollection("corrections"), `/${model.collection}/${model.id}`);
+const schema =
+  model.indexable && canonical && site.origin && model.collection !== "countries"
+    ? articleSchema({
+        collection: model.collection,
+        headline: model.title,
+        description: model.dek,
+        canonical,
+        publishedAt: model.publishedAt,
+        updatedAt: model.updatedAt,
+        origin: site.origin,
+        organization: model.release?.organization,
+        authors: model.authors
+          .filter((author) => author.href)
+          .map((author) => ({
+            name: author.name,
+            url: new URL(author.href as string, canonical).href,
+          })),
+        citations: model.sources.map((source) => ({
+          name: source.label,
+          url: source.url,
+          organization: source.organization,
+        })),
+      })
+    : null;
+const schemaJson = jsonLd(schema);
+const disclaimer = editorialDisclaimer(model.demonstration);
+const heroSizes = "(min-width: 768px) 680px, calc(100vw - 48px)";
+const showRail = model.authors.length > 0 || model.related.length > 0 || model.showToc;
+const below = [
+  model.authorStories.length > 0,
+  model.topicStories.length > 0,
+  model.countryStories.length > 0,
+].filter(Boolean).length;
+---
+
+<BaseLayout
+  title={documentTitle(model.title)}
+  description={model.dek}
+  noindex={!model.indexable}
+  kind="article"
+  publishedAt={model.publishedAt}
+  updatedAt={model.updatedAt}
+  indexed={model.indexable}
+>
+  {schemaJson && <script is:inline type="application/ld+json" set:html={schemaJson} />}
+  <article class="editorial shell-wrap">
+    <div class="editorial-frame">
+      {
+        model.demonstration && (
+          <p class="design-notice">
+            {model.designNotice ?? "Design preview: demonstration content, not published reporting."}
+          </p>
+        )
+      }
+      <ArticleHeader
+        category={model.category}
+        title={model.title}
+        dek={model.dek}
+        authors={model.authors}
+        review={model.review}
+        publishedAt={model.publishedAt}
+        updatedAt={model.updatedAt}
+        readingLabel={model.readingLabel}
+        issuer={model.authors.length === 0 ? model.release?.organization : undefined}
+      />
+      <div class:list={["editorial-layout", { "editorial-layout-rail": showRail }]}>
+        <div class="editorial-main" data-pagefind-body={model.indexable ? true : undefined}>
+          <hr class="editorial-rule" />
+          {
+            model.hero ? (
+              <Figure
+                src={model.hero.src}
+                alt={model.hero.alt}
+                caption={model.hero.caption}
+                credit={model.hero.credit}
+                focal={model.hero.focal}
+                sizes={heroSizes}
+                priority
+              />
+            ) : (
+              model.demonstration && (
+                <DesignPlaceholder
+                  alt="Design preview. No photograph."
+                  caption="Layout example. This frame is not a photograph."
+                  credit="Design preview."
+                  priority
+                />
+              )
+            )
+          }
+          <ShareBar title={model.title} />
+          {model.showToc && <ArticleToc headings={model.headings} variant="mobile" />}
+          <div class="article-body">
+            <slot />
+          </div>
+          {model.report && <ReportSections {...model.report} />}
+          {model.program && <ProgramGuide {...model.program} />}
+          {
+            model.release && (
+              <ReleaseNote
+                dateline={model.release.dateline}
+                organization={model.release.organization}
+                boilerplate={model.release.boilerplate}
+                mediaContact={model.release.mediaContact}
+              />
+            )
+          }
+          <SupportingLinks links={model.supporting ?? []} />
+          {model.showSources && <Sources sources={model.sources} />}
+          {
+            model.topic && (
+              <section class="article-section" id="topics-in-this-article" aria-labelledby="topics-in-this-article-title">
+                <h2 id="topics-in-this-article-title">Topics in this article</h2>
+                <p class="topic-link">
+                  <a href={model.topic.href}>{model.topic.label}</a>
+                </p>
+              </section>
+            )
+          }
+          <section class="article-section" id="corrections" aria-labelledby="corrections-title">
+            <h2 id="corrections-title">Corrections</h2>
+            <CorrectionsList items={corrections} logLink />
+          </section>
+          <p class="article-notice">{disclaimer}</p>
+          <ShareBar title={model.title} />
+        </div>
+        {
+          showRail && (
+            <aside class="editorial-rail" data-pagefind-ignore>
+              <AuthorModule authors={model.authors} />
+              <CoverageList title="Related coverage" items={model.related} compact />
+              {model.showToc && <ArticleToc headings={model.headings} variant="desktop" />}
+            </aside>
+          )
+        }
+      </div>
+      {
+        below > 0 && (
+          <div class="coverage-board" data-groups={below} data-pagefind-ignore>
+            <CoverageList title="More from this author" items={model.authorStories} />
+            <CoverageList title="More on this topic" items={model.topicStories} />
+            <CoverageList title="More on this country" items={model.countryStories} />
+          </div>
+        )
+      }
+    </div>
+  </article>
+  <script>
+    import "../scripts/article.ts";
+  </script>
+</BaseLayout>

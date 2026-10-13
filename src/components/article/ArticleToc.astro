@@ -1,0 +1,48 @@
+---
+import type { TocHeading } from "../../lib/load-article";
+
+interface Props {
+  headings: TocHeading[];
+  variant: "mobile" | "desktop";
+}
+
+const { headings, variant } = Astro.props;
+---
+
+{
+  headings.length > 0 && variant === "mobile" && (
+    <details class="toc-mobile">
+      <summary>In this article</summary>
+      <nav aria-label="In this article">
+        <ol class="toc-list">
+          {headings.map((heading) => (
+            <li class:list={{ "toc-sub": heading.depth > 2 }}>
+              <a href={`#${heading.slug}`} data-toc-link>
+                {heading.text}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    </details>
+  )
+}
+
+{
+  headings.length > 0 && variant === "desktop" && (
+    <nav class="toc-desktop" aria-labelledby="desktop-toc-label">
+      <p id="desktop-toc-label" class="toc-label">
+        In this article
+      </p>
+      <ol class="toc-list">
+        {headings.map((heading) => (
+          <li class:list={{ "toc-sub": heading.depth > 2 }}>
+            <a href={`#${heading.slug}`} data-toc-link>
+              {heading.text}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}

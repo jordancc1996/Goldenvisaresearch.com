@@ -1,0 +1,25 @@
+---
+import { legalNav } from "../../data/navigation";
+import { site } from "../../data/site";
+import NavList from "./NavList.astro";
+import Wordmark from "./Wordmark.astro";
+
+const path = Astro.url.pathname.replace(/\/index\.html$/, "/");
+const isHome = path === "/" || path === "";
+---
+
+<footer class="site-footer">
+  <div class="shell-wrap footer-inner">
+    <div class="footer-identity">
+      <Wordmark variant="footer" />
+      <p class="type-ui">{site.description}</p>
+      <p id={isHome ? undefined : "newsletter"} class="type-ui footer-newsletter">
+        <a href="/newsletter">Newsletter</a> subscription is not configured.
+      </p>
+    </div>
+    <div class="footer-nav">
+      <NavList label="Footer" variant="footer" />
+      <NavList label="Publication" variant="legal" items={legalNav} />
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,44 @@
+---
+import { paginationLinks } from "../../lib/archive";
+
+interface Props {
+  page: number;
+  pages: number;
+  base: string;
+}
+
+const { page, pages, base } = Astro.props;
+const links = paginationLinks(base, page, pages);
+---
+
+{
+  pages > 1 && (
+    <nav class="pagination" aria-label="Pagination">
+      {links.prev ? (
+        <a href={links.prev} rel="prev">
+          Previous
+        </a>
+      ) : (
+        <span class="pagination-muted">Previous</span>
+      )}
+      <ol>
+        {links.links.map((link) => (
+          <li>
+            {link.current ? (
+              <span aria-current="page">{link.page}</span>
+            ) : (
+              <a href={link.href}>{link.page}</a>
+            )}
+          </li>
+        ))}
+      </ol>
+      {links.next ? (
+        <a href={links.next} rel="next">
+          Next
+        </a>
+      ) : (
+        <span class="pagination-muted">Next</span>
+      )}
+    </nav>
+  )
+}

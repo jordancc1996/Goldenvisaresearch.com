@@ -1,0 +1,77 @@
+---
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+import { isImageMetadata } from "../../lib/image-metadata";
+
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  caption: string;
+  credit: string;
+  focal?: string;
+  priority?: boolean;
+  compact?: boolean;
+  sizes?: string;
+  thumb?: boolean;
+}
+
+const {
+  src,
+  alt,
+  caption,
+  credit,
+  focal = "50% 50%",
+  priority = false,
+  compact = false,
+  sizes,
+  thumb = false,
+} = Astro.props;
+
+const image = isImageMetadata(src) ? src : undefined;
+const widths = compact ? [168, 336] : priority ? [640, 960, 1280, 1600] : [480, 680, 960];
+const imageSizes =
+  sizes ??
+  (compact
+    ? "168px"
+    : priority
+      ? "(min-width: 1168px) 1072px, calc(100vw - 48px)"
+      : "(min-width: 768px) 680px, calc(100vw - 48px)");
+---
+
+<figure
+  class:list={[
+    "article-figure",
+    {
+      "article-figure-hero": priority,
+      "article-figure-inline": !priority && !compact,
+      "article-figure-compact": compact,
+    },
+  ]}
+  style={`--focal: ${focal}`}
+>
+  <div class="article-figure-frame">
+    {
+      image && (
+        <Image
+          src={image}
+          alt={alt}
+          widths={widths}
+          sizes={imageSizes}
+          format="webp"
+          loading="eager"
+          decoding="async"
+          fetchpriority={priority ? "high" : "auto"}
+          class="article-figure-img"
+        />
+      )
+    }
+  </div>
+  {
+    !thumb && (
+      <figcaption>
+        <span>{caption}</span>
+        <span class="article-credit">{credit}</span>
+      </figcaption>
+    )
+  }
+</figure>

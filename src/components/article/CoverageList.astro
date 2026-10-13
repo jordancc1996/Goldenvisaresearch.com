@@ -1,0 +1,51 @@
+---
+import DesignPlaceholder from "./DesignPlaceholder.astro";
+import Figure from "./Figure.astro";
+import { formatArticleDate, isoDate } from "../../lib/article-display";
+import type { RelatedCard } from "../../lib/load-article";
+
+interface Props {
+  title: string;
+  items: RelatedCard[];
+  compact?: boolean;
+}
+
+const { title, items, compact = false } = Astro.props;
+const headingId = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+---
+
+{
+  items.length > 0 && (
+    <section class:list={["coverage-group", { "coverage-group-compact": compact }]} aria-labelledby={headingId}>
+      <h2 id={headingId}>{title}</h2>
+      <ol>
+        {items.map((item) => (
+          <li>
+            <a class="coverage-row" href={item.href}>
+              {item.hero ? (
+                <Figure
+                  src={item.hero.src}
+                  alt={item.hero.alt}
+                  caption={item.hero.caption}
+                  credit={item.hero.credit}
+                  focal={item.hero.focal}
+                  compact
+                  thumb
+                />
+              ) : (
+                item.placeholder && <DesignPlaceholder alt="Design preview. No photograph." compact />
+              )}
+              <span class="coverage-copy">
+                <span class="coverage-kicker">{item.category}</span>
+                <span class="coverage-title">{item.title}</span>
+                <span class="coverage-date">
+                  <time datetime={isoDate(item.publishedAt)}>{formatArticleDate(item.publishedAt)}</time>
+                </span>
+              </span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </section>
+  )
+}

@@ -1,0 +1,50 @@
+---
+import { Image } from "astro:assets";
+import StoryMeta from "./StoryMeta.astro";
+import { isImageMetadata } from "../../lib/image-metadata";
+import { storyColumns, type GridStory } from "../../lib/story-grid";
+
+interface Props {
+  stories: GridStory[];
+}
+
+const { stories } = Astro.props;
+const columns = storyColumns(stories);
+---
+
+<div class="story-grid" style={`--cols: ${columns.length}`}>
+  {
+    columns.map((column) => (
+      <div class="story-grid-col">
+        {column.stories.map((story) => {
+          const hero = story.hero;
+          const imageSrc = hero && isImageMetadata(hero.src) ? hero.src : undefined;
+          const image = column.image && imageSrc;
+          return (
+            <article class:list={["story-grid-item", { "story-grid-image": image }]}>
+              {image && imageSrc && hero && (
+                <figure class="story-thumb" style={`--focal: ${hero.focal ?? "50% 50%"}`}>
+                  <Image
+                    src={imageSrc}
+                    alt={hero.alt}
+                    widths={[480, 720]}
+                    sizes="(min-width: 1180px) 280px, (min-width: 768px) 46vw, calc(100vw - 40px)"
+                    format="webp"
+                    loading="eager"
+                    decoding="async"
+                  />
+                </figure>
+              )}
+              <p class="type-kicker story-kicker">{story.categoryLabel}</p>
+              <h3 class:list={["story-grid-title", { "story-grid-title-lead": image }]}>
+                <a href={story.href}>{story.title}</a>
+              </h3>
+              {image && story.summary && <p class="story-grid-summary">{story.summary}</p>}
+              <StoryMeta publishedAt={story.publishedAt} plain />
+            </article>
+          );
+        })}
+      </div>
+    ))
+  }
+</div>

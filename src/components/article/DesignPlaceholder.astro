@@ -1,0 +1,33 @@
+---
+interface Props {
+  alt: string;
+  caption?: string;
+  credit?: string;
+  priority?: boolean;
+  compact?: boolean;
+}
+
+const { alt, caption, credit, priority = false, compact = false } = Astro.props;
+---
+
+{
+  compact ? (
+    <div class="design-placeholder design-placeholder-compact" role="img" aria-label={alt}>
+      <span>Design preview</span>
+    </div>
+  ) : (
+    <figure class:list={["article-figure", { "article-figure-hero": priority, "article-figure-inline": !priority }]}>
+      <div class="article-figure-frame design-placeholder" role="img" aria-label={alt}>
+        <span>Design preview. No photograph.</span>
+      </div>
+      {
+        caption && credit && (
+          <figcaption>
+            <span>{caption}</span>
+            <span class="article-credit">{credit}</span>
+          </figcaption>
+        )
+      }
+    </figure>
+  )
+}

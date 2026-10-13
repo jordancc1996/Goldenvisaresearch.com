@@ -1,0 +1,52 @@
+---
+import Figure from "../article/Figure.astro";
+import { formatArticleDate, isoDate } from "../../lib/article-display";
+import type { ArticleHero } from "../../lib/load-article";
+
+interface Props {
+  href: string;
+  kicker: string;
+  title: string;
+  summary: string;
+  publishedAt: Date;
+  countries: { name: string; href?: string }[];
+  level?: 2 | 3;
+  hero?: ArticleHero;
+}
+
+const { href, kicker, title, summary, publishedAt, countries, level = 2, hero } = Astro.props;
+const Title = level === 3 ? "h3" : "h2";
+---
+
+<li class:list={["story-row", { "story-row-media": hero }]}>
+  {
+    hero && (
+      <Figure
+        src={hero.src}
+        alt={hero.alt}
+        caption={hero.caption}
+        credit={hero.credit}
+        focal={hero.focal}
+        compact
+        thumb
+      />
+    )
+  }
+  <div class="story-copy">
+    <p class="related-kicker">{kicker}</p>
+    <Title class="story-title">
+      <a href={href}>{title}</a>
+    </Title>
+    <p class="story-meta">
+      <time datetime={isoDate(publishedAt)}>{formatArticleDate(publishedAt)}</time>
+      {countries.length > 0 && <span>. </span>}
+      {countries.map((country, index) => (
+        <>
+          {index > 0 && <span>, </span>}
+          {country.href ? <a href={country.href}>{country.name}</a> : <span>{country.name}</span>}
+        </>
+      ))}
+    </p>
+    <p class="story-summary">{summary}</p>
+  </div>
+</li>

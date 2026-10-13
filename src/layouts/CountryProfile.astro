@@ -1,0 +1,171 @@
+---
+import { getCollection } from "astro:content";
+import ArticleSidebar from "../components/article/ArticleSidebar.astro";
+import CorrectionsList from "../components/trust/CorrectionsList.astro";
+import ArticleToc from "../components/article/ArticleToc.astro";
+import Figure from "../components/article/Figure.astro";
+import RelatedCoverage from "../components/article/RelatedCoverage.astro";
+import Sources from "../components/article/Sources.astro";
+import { editorialDisclaimer, formatArticleDate, isoDate } from "../lib/article-display";
+import { correctionsForPath } from "../lib/corrections";
+import type { CountryProfile } from "../lib/load-country";
+import { canonicalUrl, site } from "../data/site";
+import { documentTitle, jsonLd, webPageSchema } from "../lib/metadata";
+import BaseLayout from "./BaseLayout.astro";
+import "../styles/article.css";
+import "../styles/directory.css";
+
+interface Props {
+  profile: CountryProfile;
+}
+
+const { profile } = Astro.props;
+const corrections = correctionsForPath(await getCollection("corrections"), `/countries/${profile.id}`);
+const canonical = canonicalUrl(`/countries/${profile.id}`);
+const schemaJson =
+  profile.indexable && canonical && site.origin
+    ? jsonLd(
+        webPageSchema({
+          name: profile.name,
+          description: profile.summary,
+          url: canonical,
+          dateModified: profile.verifiedOn,
+        }),
+      )
+    : null;
+const { Content } = profile;
+const disclaimer = editorialDisclaimer(profile.demonstration);
+---
+
+<BaseLayout
+  title={documentTitle(profile.name)}
+  description={profile.summary}
+  noindex={!profile.indexable}
+  indexed={profile.indexable}
+>
+  {schemaJson && <script is:inline type="application/ld+json" set:html={schemaJson} />}
+  <article class="article-shell shell-wrap" data-pagefind-body={profile.indexable ? true : undefined}>
+    <header class="article-header">
+      <p class="type-kicker article-kicker">Country</p>
+      <h1 class="article-title">{profile.name}</h1>
+      <p class="article-dek">{profile.summary}</p>
+      <ul class="article-facts">
+        {profile.draft && <li>Draft</li>}
+        <li>
+          Last verified:{" "}
+          {
+            profile.verifiedOn ? (
+              <time datetime={isoDate(profile.verifiedOn)}>{profile.verifiedLabel}</time>
+            ) : (
+              profile.verifiedLabel
+            )
+          }
+        </li>
+      </ul>
+      {profile.reviewNote && <p class="article-notice">{profile.reviewNote}</p>}
+    </header>
+    {
+      profile.hero ? (
+        <div class="article-hero">
+          <Figure
+            src={profile.hero.src}
+            alt={profile.hero.alt}
+            caption={profile.hero.caption}
+            credit={profile.hero.credit}
+            focal={profile.hero.focal}
+            priority
+          />
+        </div>
+      ) : (
+        <p class="article-notice">No photograph is recorded.</p>
+      )
+    }
+    <div class="article-grid">
+      <div class="article-reading">
+        <ArticleToc headings={profile.headings} variant="mobile" />
+        <div class="article-body">
+          <Content />
+        </div>
+        <section class="article-section" id="investment-overview" aria-labelledby="investment-overview-title">
+          <h2 id="investment-overview-title">Investment migration overview</h2>
+          <p>{profile.overview}</p>
+        </section>
+        <section class="article-section" id="programs" aria-labelledby="programs-title">
+          <h2 id="programs-title">Programs</h2>
+          {
+            profile.programs.length === 0 ? (
+              <p>No programs are recorded for this country.</p>
+            ) : (
+              profile.programs.map((program) => (
+                <section class="program-entry" aria-labelledby={`program-${program.programId}`}>
+                  <h3 id={`program-${program.programId}`}>
+                    <a href={program.programHref}>{program.programName}</a>
+                  </h3>
+                  {program.draft && <p>Draft</p>}
+                  <p>Type: {program.programTypeLabel}</p>
+                  <p>
+                    Status: <span class="status-label" data-status={program.status}>{program.statusLabel}</span>
+                  </p>
+                  <p>Minimum investment: {program.investmentLabel}</p>
+                  <p>
+                    Last verified:{" "}
+                    {
+                      program.verifiedOn ? (
+                        <time datetime={isoDate(program.verifiedOn)}>{program.verifiedLabel}</time>
+                      ) : (
+                        program.verifiedLabel
+                      )
+                    }
+                  </p>
+                  {program.reviewNote && <p>{program.reviewNote}</p>}
+                </section>
+              ))
+            )
+          }
+        </section>
+        <Sources sources={profile.sources} heading="Government sources" id="government-sources" />
+        <section class="article-section" id="recent-news" aria-labelledby="recent-news-title">
+          <h2 id="recent-news-title">Recent news</h2>
+          {
+            profile.news.length === 0 ? (
+              <p>No news is recorded for this country.</p>
+            ) : (
+              <ol class="related-list">
+                {profile.news.map((item) => (
+                  <li>
+                    <p class="related-kicker">{item.category}</p>
+                    <h3 class="related-title">
+                      <a href={item.href}>{item.title}</a>
+                    </h3>
+                    <p class="related-date">
+                      <time datetime={isoDate(item.publishedAt)}>{formatArticleDate(item.publishedAt)}</time>
+                    </p>
+                  </li>
+                ))}
+              </ol>
+            )
+          }
+        </section>
+        <RelatedCoverage
+          id="related-research"
+          label="Related research"
+          items={profile.research}
+          empty="No related research is recorded."
+        />
+        <section class="article-section" id="methodology" aria-labelledby="methodology-title">
+          <h2 id="methodology-title">Methodology</h2>
+          <p>{profile.methodology}</p>
+        </section>
+        <section class="article-section" id="corrections" aria-labelledby="corrections-title">
+          <h2 id="corrections-title">Corrections</h2>
+          <CorrectionsList items={corrections} logLink />
+        </section>
+        <p class="article-notice">{disclaimer}</p>
+      </div>
+      <ArticleSidebar headings={profile.headings} countries={profile.countries} topic={profile.topic} />
+    </div>
+  </article>
+  <script>
+    import "../scripts/article.ts";
+  </script>
+</BaseLayout>

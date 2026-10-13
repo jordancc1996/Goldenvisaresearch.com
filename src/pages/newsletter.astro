@@ -1,0 +1,33 @@
+---
+import EditorialForm from "../components/trust/EditorialForm.astro";
+import TrustPage from "../components/trust/TrustPage.astro";
+import { site } from "../data/site";
+import { routeIndexable } from "../lib/indexability";
+---
+
+<TrustPage
+  title="Newsletter"
+  heading="Policy changes, without the sales pitch."
+  description="Newsletter subscription for Golden Visa Research. The form provider is not configured."
+  noindex={!routeIndexable("/newsletter")}
+>
+  <p>
+    The newsletter is a separate choice from a contact message or a correction report. LinkedIn is not requested.
+  </p>
+  <EditorialForm
+    id="newsletter"
+    endpoint={site.forms.newsletter}
+    subject="Newsletter subscription"
+    submitLabel="Subscribe"
+    notice="The subscription is sent only if a form provider is configured and accepts it."
+    fields={[
+      { name: "email", label: "Email", type: "email", required: true, autocomplete: "email" },
+      {
+        name: "newsletter_consent",
+        label: "Send the newsletter to this email address. This choice does not apply to an editorial message.",
+        type: "checkbox",
+        required: true,
+      },
+    ]}
+  />
+</TrustPage>

@@ -1,0 +1,76 @@
+---
+import { formatArticleDate, isoDate } from "../../lib/article-display";
+
+interface Props {
+  findings: string[];
+  methodology?: string;
+  publishedAt: Date;
+  updatedAt?: Date;
+  attachment?: { href: string; label: string };
+}
+
+const { findings, methodology, publishedAt, updatedAt, attachment } = Astro.props;
+---
+
+<section class="article-section" id="key-findings" aria-labelledby="key-findings-title">
+  <h2 id="key-findings-title">Key findings</h2>
+  {
+    findings.length === 0 ? (
+      <p>No findings are recorded in this file.</p>
+    ) : (
+      <ul>
+        {findings.map((finding) => (
+          <li>{finding}</li>
+        ))}
+      </ul>
+    )
+  }
+</section>
+<section class="article-section" id="methodology" aria-labelledby="methodology-title">
+  <h2 id="methodology-title">Methodology</h2>
+  <p>{methodology ?? "No method is recorded in this file."}</p>
+</section>
+<section class="article-section" id="data" aria-labelledby="data-title">
+  <h2 id="data-title">Data</h2>
+  <div class="table-scroll">
+    <table>
+      <caption>Demonstration table. This file does not record measured values.</caption>
+      <thead>
+        <tr>
+          <th scope="col">Field</th>
+          <th scope="col">Recorded value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Sample</th>
+          <td>Not recorded</td>
+        </tr>
+        <tr>
+          <th scope="row">Result</th>
+          <td>Not recorded</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+<section class="article-section" id="publication" aria-labelledby="publication-title">
+  <h2 id="publication-title">Publication</h2>
+  <p>Published <time datetime={isoDate(publishedAt)}>{formatArticleDate(publishedAt)}</time>.</p>
+  {
+    updatedAt && (
+      <p>
+        Updated <time datetime={isoDate(updatedAt)}>{formatArticleDate(updatedAt)}</time>.
+      </p>
+    )
+  }
+  {
+    attachment ? (
+      <p>
+        <a href={attachment.href}>{attachment.label}</a>
+      </p>
+    ) : (
+      <p>No report file is attached.</p>
+    )
+  }
+</section>

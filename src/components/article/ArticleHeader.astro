@@ -1,0 +1,60 @@
+---
+import { isoDate, formatArticleDate } from "../../lib/article-display";
+import type { ArticleAuthor, ArticleReview } from "../../lib/load-article";
+
+interface Props {
+  category: string;
+  title: string;
+  dek: string;
+  authors: ArticleAuthor[];
+  review?: ArticleReview;
+  publishedAt: Date;
+  updatedAt?: Date;
+  readingLabel: string;
+  issuer?: string;
+}
+
+const { category, title, dek, authors, review, publishedAt, updatedAt, readingLabel, issuer } = Astro.props;
+---
+
+<header class="editorial-header">
+  <ul class="editorial-meta">
+    <li class="editorial-category">{category}</li>
+    <li>
+      <time datetime={isoDate(publishedAt)}>{formatArticleDate(publishedAt)}</time>
+    </li>
+    {
+      updatedAt && (
+        <li>
+          Updated <time datetime={isoDate(updatedAt)}>{formatArticleDate(updatedAt)}</time>
+        </li>
+      )
+    }
+    <li class="editorial-reading">{readingLabel}</li>
+  </ul>
+  <h1 class="editorial-title">{title}</h1>
+  <p class="editorial-dek">{dek}</p>
+  {
+    authors.length > 0 ? (
+      <p class="editorial-byline">
+        By{" "}
+        {authors.map((author, index) => (
+          <span>
+            {index > 0 ? (index === authors.length - 1 ? " and " : ", ") : ""}
+            {author.href ? <a href={author.href}>{author.name}</a> : author.name}
+          </span>
+        ))}
+      </p>
+    ) : (
+      issuer && <p class="editorial-byline">{issuer}</p>
+    )
+  }
+  {
+    review && (
+      <p class="article-review">
+        Reviewed by {review.href ? <a href={review.href}>{review.name}</a> : review.name} on{" "}
+        <time datetime={isoDate(review.reviewedOn)}>{formatArticleDate(review.reviewedOn)}</time>
+      </p>
+    )
+  }
+</header>

@@ -1,0 +1,51 @@
+---
+import EmptyState from "./EmptyState.astro";
+import Pagination from "./Pagination.astro";
+import StoryRow from "./StoryRow.astro";
+import { paginate, paginationLinks } from "../../lib/archive";
+import { loadPublishedPress } from "../../lib/load-archive";
+import { routeIndexable } from "../../lib/indexability";
+import { documentTitle } from "../../lib/metadata";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/article.css";
+import "../../styles/archive.css";
+
+interface Props {
+  page?: number;
+}
+
+const { page = 1 } = Astro.props;
+const description = "This section contains announcements and press releases from Golden Visa Research.";
+const result = paginate(await loadPublishedPress(), page);
+const title = documentTitle(page > 1 ? `Press Room, Page ${page}` : "Press Room");
+const links = paginationLinks("/press", result.page, result.pages);
+---
+
+<BaseLayout title={title} description={description} prev={links.prev} next={links.next} noindex={!routeIndexable("/press")}>
+  <div class="archive-page shell-wrap">
+    <header class="article-header">
+      <h1 class="article-title">Press Room</h1>
+      <p class="article-dek">{description}</p>
+    </header>
+    {
+      result.total === 0 ? (
+        <EmptyState message="No press releases have been published yet." />
+      ) : (
+        <ol class="story-rows">
+          {result.items.map((release) => (
+            <StoryRow
+              href={release.href}
+              kicker={release.categoryLabel}
+              title={release.title}
+              summary={release.summary}
+              publishedAt={release.publishedAt}
+              countries={release.countries}
+              hero={release.hero}
+            />
+          ))}
+        </ol>
+      )
+    }
+    <Pagination page={result.page} pages={result.pages} base="/press" />
+  </div>
+</BaseLayout>

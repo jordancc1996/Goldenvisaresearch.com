@@ -1,0 +1,9 @@
+name: Invalid extra field
+summary: Schema fixture with a field the strict schema does not allow.
+publishedAt: 2026-10-12
+draft: true
+material: demonstration
+unexpected: true
+sources: []
+verification:
+  status: unverified

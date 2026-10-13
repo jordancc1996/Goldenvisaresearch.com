@@ -1,0 +1,10 @@
+---
+import { announcement, newsletterLink } from "../../data/navigation";
+---
+
+<div class="announcement">
+  <div class="shell-wrap announcement-inner">
+    <p>{announcement.text}</p>
+    <a class="nav-newsletter" href={newsletterLink.href}>{newsletterLink.label}</a>
+  </div>
+</div>

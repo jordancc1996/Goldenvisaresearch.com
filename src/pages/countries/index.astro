@@ -1,0 +1,85 @@
+---
+import { getCollection } from "astro:content";
+import ArchiveFilters from "../../components/archive/ArchiveFilters.astro";
+import CountryRow from "../../components/archive/CountryRow.astro";
+import EmptyState from "../../components/archive/EmptyState.astro";
+import { groupCountries } from "../../lib/archive";
+import { regionLabels, regions } from "../../lib/content-schema";
+import { buildCountryRows, buildDirectoryRows } from "../../lib/directory";
+import { site } from "../../data/site";
+import { routeIndexable } from "../../lib/indexability";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/article.css";
+import "../../styles/archive.css";
+
+const countries = await getCollection("countries");
+const programs = await getCollection("programs");
+const directory = buildDirectoryRows(programs, countries, "production");
+const rows = buildCountryRows(countries, directory.rows, "production");
+const groups = groupCountries(rows);
+const description = "Countries with a published profile, grouped by region.";
+const countLabel = rows.length === 1 ? "1 country" : `${rows.length} countries`;
+---
+
+<BaseLayout title={`Countries - ${site.name}`} description={description} noindex={!routeIndexable("/countries")}>
+  <div class="archive-page shell-wrap">
+    <header class="article-header">
+      <h1 class="article-title">Countries</h1>
+      <p class="article-dek">{description}</p>
+    </header>
+    <form data-country-archive>
+      <div class="country-search">
+        <label for="country-search">
+          Search
+          <input id="country-search" type="search" data-country-search autocomplete="off" />
+        </label>
+      </div>
+      <ArchiveFilters
+        label="Regions"
+        items={[
+          { label: "All regions", value: "all", pressed: true },
+          ...regions.map((region) => ({ label: regionLabels[region], value: region })),
+        ]}
+      />
+      {
+        rows.length > 0 && (
+          <p class="story-meta" data-archive-count aria-live="polite">
+            {countLabel}
+          </p>
+        )
+      }
+      {
+        rows.length === 0 ? (
+          <EmptyState message="No countries are published." />
+        ) : (
+          groups.map((group) => (
+            <section
+              class="country-group"
+              data-region-group={group.region}
+              aria-labelledby={`region-${group.region}`}
+            >
+              <h2 id={`region-${group.region}`}>{group.label}</h2>
+              <ol class="country-rows">
+                {group.rows.map((row) => (
+                  <CountryRow
+                    href={row.href}
+                    name={row.name}
+                    region={row.region}
+                    programCountLabel={row.programCountLabel}
+                    statusLabels={row.statusLabels}
+                    verifiedLabel={row.verifiedLabel}
+                    verifiedOn={row.verifiedOn}
+                  />
+                ))}
+              </ol>
+            </section>
+          ))
+        )
+      }
+      <p class="empty-state" data-filter-empty hidden>No countries match these filters.</p>
+    </form>
+  </div>
+  <script>
+    import "../../scripts/country-archive.ts";
+  </script>
+</BaseLayout>

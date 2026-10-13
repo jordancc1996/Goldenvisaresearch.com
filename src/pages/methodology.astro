@@ -1,0 +1,32 @@
+---
+import TrustPage from "../components/trust/TrustPage.astro";
+import { routeIndexable } from "../lib/indexability";
+import { reviewWindowDays } from "../lib/article-display";
+---
+
+<TrustPage
+  title="Methodology"
+  description="Methodology for sources, program status, investment figures, and last verified dates."
+  noindex={!routeIndexable("/methodology")}
+>
+  <h2>Primary sources</h2>
+  <p>
+    A published research file stores its sources as structured fields: a label, an https URL, and, when recorded, the organization and the date the source was accessed. The page lists those fields. It does not replace them with an unsourced summary.
+  </p>
+  <h2>Government documents</h2>
+  <p>
+    The publication rule asks for an https source before a verified file can be published. That check does not identify the site as a government domain. A person has to record the source. No published file currently contains a verified government document, so this page does not describe a completed document review.
+  </p>
+  <h2>Program status</h2>
+  <p>
+    Status is stored on the program file. The country profile and the status tracker read that file. They do not keep a second copy of the figure or the status. An unverified status is shown as Unverified even if another word is stored on the file.
+  </p>
+  <h2>Investment verification</h2>
+  <p>
+    The minimum investment is stored on the program file. The page shows it only when the amount is a positive number, the currency is recorded, and verification is complete. A missing or unverified figure stays unlabeled as a sum of money.
+  </p>
+  <h2>Last verified dates</h2>
+  <p>
+    The last verified date is the verifiedOn date in the file. If that date is more than {reviewWindowDays} days before the build, the page adds Review due and does not present the record as current. The build warns on those records. It does not delete them.
+  </p>
+</TrustPage>

@@ -1,0 +1,15 @@
+---
+import { getCollection } from "astro:content";
+import ArticleView from "../../components/article/ArticleView.astro";
+import { isProduction } from "../../lib/content";
+import { pressRouteParams } from "../../lib/press";
+
+export async function getStaticPaths() {
+  return pressRouteParams(await getCollection("press"), isProduction());
+}
+
+const slug = Astro.params.slug;
+if (!slug) throw new Error("Missing press slug");
+---
+
+<ArticleView collection="press" id={slug} />

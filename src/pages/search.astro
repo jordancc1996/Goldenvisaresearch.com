@@ -1,0 +1,35 @@
+---
+import { routeIndexable } from "../lib/indexability";
+import { documentTitle } from "../lib/metadata";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import "../styles/article.css";
+import "../styles/search.css";
+
+const query = Astro.url.searchParams.get("q") ?? "";
+---
+
+<BaseLayout
+  title={documentTitle("Search")}
+  description="Search published pages on this site."
+  noindex={!routeIndexable("/search")}
+>
+  <div class="archive-page shell-wrap">
+    <header class="article-header">
+      <h1 class="article-title">Search</h1>
+      <p class="article-dek">Search published pages. Drafts are not included.</p>
+    </header>
+    <form class="search-page-form" action="/search" method="get" role="search" data-search-page>
+      <label for="search-query">Search published pages</label>
+      <input id="search-query" name="q" type="search" value={query} autocomplete="off" />
+      <button class="search-submit" type="submit">Search</button>
+    </form>
+    <p class="search-status" data-search-status role="status" aria-live="polite"></p>
+    <ol class="search-results" data-search-results></ol>
+    <noscript>
+      <p class="search-status">Search results load in the browser from the pages published on this site.</p>
+    </noscript>
+  </div>
+</BaseLayout>
+<script>
+  import "../scripts/search.ts";
+</script>

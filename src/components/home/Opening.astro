@@ -1,0 +1,60 @@
+---
+import HomeFigure from "./HomeFigure.astro";
+import StoryMeta from "./StoryMeta.astro";
+import type { HomeStory } from "../../lib/load-archive";
+
+interface Props {
+  lead?: HomeStory;
+  secondary: HomeStory[];
+}
+
+const { lead, secondary } = Astro.props;
+---
+
+<section class="home-section home-opening shell-wrap" aria-labelledby={lead ? "lead-title" : "news-empty-title"}>
+  <div class="home-lead">
+    <div class="home-lead-main">
+      {
+        lead ? (
+          <article>
+            <p class="type-kicker">{lead.categoryLabel}</p>
+            <h1 id="lead-title" class="home-lead-title">
+              <a href={lead.href}>{lead.title}</a>
+            </h1>
+            <p class="home-dek">{lead.summary}</p>
+            <StoryMeta publishedAt={lead.publishedAt} updatedAt={lead.updatedAt} plain />
+            {lead.hero && (
+              <HomeFigure
+                hero={lead.hero}
+                priority
+                sizes="(min-width: 1024px) 760px, calc(100vw - 40px)"
+              />
+            )}
+          </article>
+        ) : (
+          <>
+            <h1 id="news-empty-title" class="home-lead-title">News</h1>
+            <p class="home-status">No news is published.</p>
+          </>
+        )
+      }
+    </div>
+    {
+      secondary.length > 0 && (
+        <ol class="home-rail">
+          {secondary.map((story) => (
+            <li>
+              <article>
+                <p class="type-kicker">{story.categoryLabel}</p>
+                <h2 class="home-rail-title">
+                  <a href={story.href}>{story.title}</a>
+                </h2>
+                <StoryMeta publishedAt={story.publishedAt} plain />
+              </article>
+            </li>
+          ))}
+        </ol>
+      )
+    }
+  </div>
+</section>

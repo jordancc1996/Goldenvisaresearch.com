@@ -1,0 +1,43 @@
+---
+interface Props {
+  section?: string;
+  author?: string;
+  date?: Date;
+  verified?: boolean;
+}
+
+const { section, author, date, verified } = Astro.props;
+
+const dateLabel = date
+  ? new Intl.DateTimeFormat("en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      timeZone: "UTC",
+    }).format(date)
+  : undefined;
+
+const status =
+  verified === true ? "Verified" : verified === false ? "Unverified" : undefined;
+
+const items = [section, author, dateLabel, status].filter(
+  (item): item is string => Boolean(item),
+);
+---
+
+{
+  items.length > 0 && (
+    <p class="type-meta">
+      {items.map((item, index) => (
+        <span>
+          {index > 0 && (
+            <span class="meta-separator" aria-hidden="true">
+              /
+            </span>
+          )}
+          {item}
+        </span>
+      ))}
+    </p>
+  )
+}

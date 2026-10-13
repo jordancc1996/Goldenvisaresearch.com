@@ -1,0 +1,31 @@
+---
+import { primaryNav, type NavItem } from "../../data/navigation";
+
+interface Props {
+  label: string;
+  variant: "primary" | "topics" | "menu" | "footer" | "legal";
+  items?: NavItem[];
+}
+
+const { label, variant, items = primaryNav } = Astro.props;
+const current = Astro.url.pathname.replace(/\/+$/, "") || "/";
+
+function isCurrent(href: string) {
+  const path = href.replace(/\/+$/, "") || "/";
+  return path !== "/" && current === path;
+}
+---
+
+<nav class:list={["nav-list", `nav-list-${variant}`]} aria-label={label}>
+  <ul>
+    {
+      items.map((item) => (
+        <li>
+          <a href={item.href} aria-current={isCurrent(item.href) ? "page" : undefined}>
+            {item.label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>

@@ -1,0 +1,13 @@
+---
+interface Props {
+  show: boolean;
+}
+
+const { show } = Astro.props;
+---
+
+{
+  show && (
+    <p class="design-notice">Design preview — demonstration content, not published reporting.</p>
+  )
+}

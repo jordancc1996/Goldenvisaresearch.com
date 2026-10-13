@@ -1,0 +1,23 @@
+---
+interface Props {
+  dateline?: string;
+  organization?: string;
+  boilerplate?: string;
+  mediaContact?: string;
+}
+
+const { dateline, organization, boilerplate, mediaContact } = Astro.props;
+const recorded = Boolean(dateline || organization || boilerplate || mediaContact);
+---
+
+{
+  recorded && (
+    <section class="article-section" id="release-details" aria-labelledby="release-details-title">
+      <h2 id="release-details-title">Release details</h2>
+      {dateline && <p>Dateline: {dateline}.</p>}
+      {organization && <p>Organization: {organization}.</p>}
+      {boilerplate && <p>{boilerplate}</p>}
+      {mediaContact && <p>Media contact: {mediaContact}</p>}
+    </section>
+  )
+}

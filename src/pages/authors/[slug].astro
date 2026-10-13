@@ -1,0 +1,89 @@
+---
+import { getCollection, getEntry, render } from "astro:content";
+import AuthorProfile from "../../components/author/AuthorProfile.astro";
+import { canonicalUrl, site } from "../../data/site";
+import { documentTitle, jsonLd, personSchema } from "../../lib/metadata";
+import { categoryLabel } from "../../lib/article-display";
+import { isProduction, visibleAuthorInProduction } from "../../lib/content";
+import { resolveContentImage } from "../../lib/load-article";
+import { articlesByAuthor, reviewsByAuthor } from "../../lib/topic-assign";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/article.css";
+import "../../styles/archive.css";
+
+export async function getStaticPaths() {
+  const authors = await getCollection("authors");
+  return authors
+    .filter((author) => (isProduction() ? visibleAuthorInProduction(author) : true))
+    .map((author) => ({ params: { slug: author.id } }));
+}
+
+const { slug } = Astro.params;
+if (!slug) throw new Error("Missing author");
+const author = await getEntry("authors", slug);
+if (!author) throw new Error(`Missing author: ${slug}`);
+const rendered = await render(author);
+const [news, reports] = await Promise.all([getCollection("news"), getCollection("reports")]);
+const entries = [
+  ...news.map((entry) => ({ ...entry, kind: "news" as const })),
+  ...reports.map((entry) => ({ ...entry, kind: "reports" as const })),
+];
+const byDate = (left: (typeof entries)[number], right: (typeof entries)[number]) =>
+  right.data.publishedAt.getTime() - left.data.publishedAt.getTime();
+const authored = (articlesByAuthor(entries, author.id) as typeof entries).sort(byDate);
+const reviewed = (reviewsByAuthor(entries, author.id) as typeof entries).sort(byDate);
+const articles = authored.map((entry) => ({
+  id: entry.id,
+  href: `/${entry.kind}/${entry.id}`,
+  title: entry.data.title,
+  summary: entry.data.description,
+  category: entry.data.category ?? "news",
+  categoryLabel: categoryLabel(entry.data.category, entry.kind === "reports" ? "Research" : "News"),
+  publishedAt: entry.data.publishedAt,
+  countries: [],
+}));
+const photoSrc = author.data.photo ? await resolveContentImage(author.data.photo.src) : undefined;
+const photo = author.data.photo && photoSrc ? { alt: author.data.photo.alt, credit: author.data.photo.credit, src: photoSrc } : undefined;
+const { Content } = rendered;
+const canonical = canonicalUrl(`/authors/${author.id}`);
+const indexable = visibleAuthorInProduction(author);
+const sameAs = author.data.linkedin?.startsWith("https://") ? author.data.linkedin : undefined;
+const schemaJson =
+  indexable && canonical && site.origin
+    ? jsonLd(
+        personSchema({
+          name: author.data.name,
+          url: canonical,
+          description: author.data.summary,
+          sameAs,
+        }),
+      )
+    : null;
+---
+
+<BaseLayout
+  title={documentTitle(author.data.name)}
+  description={author.data.summary}
+  noindex={!indexable}
+  indexed={indexable}
+>
+  {schemaJson && <script is:inline type="application/ld+json" set:html={schemaJson} />}
+  <AuthorProfile
+    name={author.data.name}
+    role={author.data.role}
+    summary={author.data.summary}
+    expertise={author.data.expertise}
+    linkedin={author.data.linkedin}
+    disclosures={author.data.disclosures}
+    hasBody={Boolean(author.body?.trim())}
+    photo={photo}
+    articles={articles}
+    reviews={reviewed.map((entry) => ({
+      href: `/${entry.kind}/${entry.id}`,
+      title: entry.data.title,
+      reviewedOn: entry.data.review!.reviewedOn,
+    }))}
+  >
+    <Content />
+  </AuthorProfile>
+</BaseLayout>

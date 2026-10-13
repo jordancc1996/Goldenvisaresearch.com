@@ -1,0 +1,37 @@
+---
+import { formatArticleDate, isoDate } from "../../lib/article-display";
+import type { ArticleSource } from "../../lib/load-article";
+
+interface Props {
+  sources: ArticleSource[];
+  heading?: string;
+  id?: string;
+}
+
+const { sources, heading = "Sources", id = "sources" } = Astro.props;
+---
+
+<section class="article-section" id={id} aria-labelledby={`${id}-title`}>
+  <h2 id={`${id}-title`}>{heading}</h2>
+  {
+    sources.length === 0 ? (
+      <p>No sources are recorded.</p>
+    ) : (
+      <ol class="source-list">
+        {sources.map((source, index) => (
+          <li id={`source-${index + 1}`}>
+            {source.label}
+            {source.organization ? `. ${source.organization}` : ""}.{" "}
+            <a href={source.url}>{source.url}</a>
+            {source.accessedOn && (
+              <>
+                {" "}
+                Accessed <time datetime={isoDate(source.accessedOn)}>{formatArticleDate(source.accessedOn)}</time>.
+              </>
+            )}
+          </li>
+        ))}
+      </ol>
+    )
+  }
+</section>

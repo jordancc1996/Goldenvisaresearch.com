@@ -1,0 +1,94 @@
+---
+import ArchiveFilters from "./ArchiveFilters.astro";
+import TopicLinks from "../topic/TopicLinks.astro";
+import DesignNotice from "../home/DesignNotice.astro";
+import EmptyState from "./EmptyState.astro";
+import Pagination from "./Pagination.astro";
+import StoryGrid from "../home/StoryGrid.astro";
+import StoryRow from "./StoryRow.astro";
+import {
+  filterNews,
+  newsArchiveCategories,
+  paginate,
+  paginationLinks,
+  type NewsArchiveSlug,
+} from "../../lib/archive";
+import { loadPublishedNews } from "../../lib/load-archive";
+import { routeIndexable } from "../../lib/indexability";
+import { documentTitle } from "../../lib/metadata";
+import { titleCase } from "../../lib/headings";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/article.css";
+import "../../styles/archive.css";
+import "../../styles/edition.css";
+
+interface Props {
+  category?: NewsArchiveSlug;
+  page?: number;
+}
+
+const { category, page = 1 } = Astro.props;
+const stories = filterNews(await loadPublishedNews(), category);
+const result = paginate(stories, page);
+const meta = newsArchiveCategories.find((item) => item.slug === category);
+const heading = titleCase(meta?.label ?? "News");
+const description =
+  meta?.description ?? "News on investment migration policy, legislation, and regulation.";
+const title = documentTitle(page > 1 ? `${heading}, Page ${page}` : heading);
+const base = category ? `/news/${category}` : "/news";
+const links = paginationLinks(base, result.page, result.pages);
+const empty = meta ? `No ${meta.label.toLowerCase()} articles are published.` : "No news is published.";
+const feature = page === 1 ? result.items.slice(0, Math.min(6, result.items.length)) : [];
+const rows = page === 1 ? result.items.slice(feature.length) : result.items;
+const desk = stories.some((story) => story.desk);
+const filters = [
+  { label: "All news", href: "/news", current: !category },
+  ...newsArchiveCategories.map((item) => ({
+    label: item.label,
+    href: `/news/${item.slug}`,
+    current: item.slug === category,
+  })),
+];
+---
+
+<BaseLayout title={title} description={description} prev={links.prev} next={links.next} noindex={!routeIndexable(base)}>
+  <div class="archive-page edition-archive shell-wrap">
+    <DesignNotice show={desk} />
+    <header class="article-header">
+      {meta && <p class="type-kicker article-kicker">News</p>}
+      <h1 class="article-title">{heading}</h1>
+      <p class="article-dek">
+        {description}{result.total > 0 ? " Twenty stories appear on each page." : ""}
+      </p>
+    </header>
+    <ArchiveFilters label="Categories" items={filters} />
+    <TopicLinks />
+    {
+      result.total === 0 ? (
+        <EmptyState message={empty} />
+      ) : (
+        <>
+          {feature.length > 0 && <StoryGrid stories={feature} />}
+          {rows.length > 0 && (
+            <section class="archive-follow" aria-labelledby={feature.length > 0 ? "earlier-news" : undefined}>
+              {feature.length > 0 && <h2 id="earlier-news">Earlier coverage</h2>}
+              <ol class="story-rows">
+                {rows.map((story) => (
+                  <StoryRow
+                    href={story.href}
+                    kicker={story.categoryLabel}
+                    title={story.title}
+                    summary={story.summary}
+                    publishedAt={story.publishedAt}
+                    countries={story.countries}
+                  />
+                ))}
+              </ol>
+            </section>
+          )}
+        </>
+      )
+    }
+    <Pagination page={result.page} pages={result.pages} base={base} />
+  </div>
+</BaseLayout>

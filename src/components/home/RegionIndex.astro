@@ -1,0 +1,19 @@
+---
+import { homeRegions } from "../../data/home-regions";
+import EditionHeading from "./EditionHeading.astro";
+---
+
+<section class="home-section home-region-section shell-wrap" aria-labelledby="home-regions">
+  <EditionHeading title="Explore by region" labelledby="home-regions" href="/countries" />
+  <nav aria-label="Regions">
+    <ol class="home-regions">
+      {
+        homeRegions.map((region) => (
+          <li>
+            <a href={`/countries?region=${region.region}`}>{region.label}</a>
+          </li>
+        ))
+      }
+    </ol>
+  </nav>
+</section>

@@ -1,0 +1,27 @@
+---
+import TrustPage from "../components/trust/TrustPage.astro";
+import { routeIndexable } from "../lib/indexability";
+---
+
+<TrustPage
+  title="About"
+  description="About Golden Visa Research, which publishes news and research on investment migration."
+  noindex={!routeIndexable("/about")}
+>
+  <h2>Purpose</h2>
+  <p>
+    Golden Visa Research publishes news and research on investment migration. The subject is residence by investment and citizenship by investment, kept as separate topics.
+  </p>
+  <h2>What the publication does</h2>
+  <p>
+    A page states a program rule, a status, a fee, or an investment amount only when that fact is in a published file with its source. The country profile, the program record, and the status tracker read the same program file.
+  </p>
+  <h2>What the publication does not do</h2>
+  <p>
+    The site does not sell residence or citizenship. It does not rank programs, score countries, or recommend a route.
+  </p>
+  <h2>What is not recorded</h2>
+  <p>
+    No legal entity, postal address, or named editor is recorded for this publication. No institutional affiliation is recorded.
+  </p>
+</TrustPage>

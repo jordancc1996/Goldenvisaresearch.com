@@ -1,0 +1,50 @@
+---
+import ArticleToc from "./ArticleToc.astro";
+import type { ArticleCountry, ArticleTopic, TocHeading } from "../../lib/load-article";
+
+interface Props {
+  headings: TocHeading[];
+  countries: ArticleCountry[];
+  topic?: ArticleTopic;
+}
+
+const { headings, countries, topic } = Astro.props;
+const current = Astro.url.pathname.replace(/\/+$/, "") || "/";
+---
+
+<aside class="article-sidebar" data-pagefind-ignore>
+  <ArticleToc headings={headings} variant="desktop" />
+  {
+    countries.length > 0 && (
+      <section class="sidebar-block" aria-labelledby="countries-covered-label">
+        <p id="countries-covered-label" class="toc-label">
+          Countries covered
+        </p>
+        <ul class="sidebar-list">
+          {countries.map((country) => (
+            <li>
+              {country.href && country.href !== current ? (
+                <a href={country.href}>{country.name}</a>
+              ) : (
+                <span>{country.name}</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+  {
+    topic && (
+      <section class="sidebar-block" aria-labelledby="topic-label">
+        <p id="topic-label" class="toc-label">Topic</p>
+        <a class="sidebar-link" href={topic.href}>{topic.label}</a>
+      </section>
+    )
+  }
+  <section class="sidebar-block" aria-labelledby="sidebar-newsletter-label">
+    <p id="sidebar-newsletter-label" class="toc-label">Newsletter</p>
+    <p class="sidebar-note">Newsletter subscription is not configured.</p>
+    <a class="sidebar-link" href="/newsletter">Newsletter</a>
+  </section>
+</aside>

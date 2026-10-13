@@ -1,0 +1,229 @@
+.edition-heading {
+  margin: 0 0 28px;
+  border-top: 1px solid var(--color-rule);
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.edition-heading-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  align-items: baseline;
+  justify-content: center;
+  padding-block: 14px;
+}
+
+.edition-heading h2 {
+  margin: 0;
+  color: var(--color-accent);
+  font-family: var(--font-serif);
+  font-size: 28px;
+  font-weight: 560;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  text-align: center;
+}
+
+.edition-heading a {
+  color: var(--color-accent);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+}
+
+.edition-heading a:hover,
+.edition-heading a:active {
+  color: var(--color-accent-hover);
+}
+
+.story-grid {
+  display: grid;
+  gap: 0;
+}
+
+.story-grid-col + .story-grid-col {
+  border-top: 1px solid var(--color-rule);
+  margin-top: 8px;
+  padding-top: 20px;
+}
+
+.story-grid-item + .story-grid-item {
+  border-top: 1px solid var(--color-rule);
+  margin-top: 18px;
+  padding-top: 18px;
+}
+
+.story-kicker {
+  margin-bottom: 8px;
+}
+
+.story-thumb {
+  margin: 0 0 12px;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: var(--color-mist);
+}
+
+.story-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: var(--focal, 50% 50%);
+}
+
+.story-grid-title {
+  margin: 0;
+  color: var(--color-ink);
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 560;
+  line-height: 1.25;
+  overflow-wrap: break-word;
+}
+
+.story-grid-title-lead {
+  font-size: 26px;
+}
+
+.story-grid-title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.story-grid-title a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+}
+
+.story-grid-summary {
+  margin: 10px 0 0;
+  color: var(--color-ink);
+  font-family: var(--font-serif);
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.story-byline {
+  margin-top: 8px;
+  letter-spacing: 0;
+  text-transform: none;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.design-notice {
+  margin: 0 0 28px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-rule);
+  color: var(--color-charcoal);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.home-preview-note {
+  padding-top: 28px;
+}
+
+.home-status {
+  margin: 18px 0 0;
+  max-width: 40rem;
+  color: var(--color-ink);
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.edition-archive .article-header,
+.edition-archive .article-title,
+.edition-archive .article-dek {
+  max-width: none;
+}
+
+.archive-follow {
+  margin-top: 36px;
+}
+
+.archive-follow h2 {
+  margin: 0 0 8px;
+  color: var(--color-accent);
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 560;
+  line-height: 1.25;
+}
+
+.edition-heading a:focus-visible,
+.story-grid-title a:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+@media (min-width: 768px) {
+  .story-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 28px;
+  }
+
+  .story-grid-col + .story-grid-col {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .story-grid-col:nth-child(even) {
+    border-left: 1px solid var(--color-rule);
+    padding-left: 28px;
+  }
+
+  .story-grid-col:nth-child(n + 3) {
+    border-top: 1px solid var(--color-rule);
+    margin-top: 28px;
+    padding-top: 28px;
+  }
+
+  .edition-heading h2 {
+    font-size: 32px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .story-grid {
+    grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr));
+    column-gap: 24px;
+  }
+
+  .story-grid-col:nth-child(even) {
+    border-left: 0;
+    padding-left: 0;
+  }
+
+  .story-grid-col:nth-child(n + 3) {
+    border-top: 0;
+    margin-top: 0;
+    padding-top: 0;
+  }
+
+  .story-grid-col + .story-grid-col {
+    border-left: 1px solid var(--color-rule);
+    padding-left: 22px;
+  }
+
+  .story-grid-title-lead {
+    font-size: 26px;
+  }
+
+  .edition-archive .article-title {
+    font-size: 52px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edition-heading a,
+  .story-grid-title a {
+    transition: none;
+  }
+}

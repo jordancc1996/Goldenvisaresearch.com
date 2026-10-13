@@ -1,0 +1,43 @@
+---
+import { formatArticleDate, isoDate } from "../../lib/article-display";
+
+interface Props {
+  href: string;
+  kicker: string;
+  title: string;
+  summary: string;
+  publishedAt: Date;
+  updatedAt?: Date;
+  countries: { name: string; href?: string }[];
+  level?: 2 | 3;
+}
+
+const { href, kicker, title, summary, publishedAt, updatedAt, countries, level = 2 } = Astro.props;
+const Title = level === 3 ? "h3" : "h2";
+---
+
+<div class="story-card">
+  <p class="related-kicker">{kicker}</p>
+  <Title class="story-title">
+    <a href={href}>{title}</a>
+  </Title>
+  <p class="story-meta">
+    <time datetime={isoDate(publishedAt)}>{formatArticleDate(publishedAt)}</time>
+    {
+      updatedAt && (
+        <>
+          <span> Updated </span>
+          <time datetime={isoDate(updatedAt)}>{formatArticleDate(updatedAt)}</time>
+        </>
+      )
+    }
+    {countries.length > 0 && <span>. </span>}
+    {countries.map((country, index) => (
+      <>
+        {index > 0 && <span>, </span>}
+        {country.href ? <a href={country.href}>{country.name}</a> : <span>{country.name}</span>}
+      </>
+    ))}
+  </p>
+  <p class="story-summary">{summary}</p>
+</div>

@@ -1,0 +1,24 @@
+---
+import { topicPages } from "../../data/topics";
+import type { TopicSlug } from "../../lib/content-schema";
+
+interface Props {
+  current?: TopicSlug;
+}
+
+const { current } = Astro.props;
+---
+
+<nav class="archive-filters" aria-label="Topic hubs">
+  <ul>
+    {
+      topicPages.map((topic) => (
+        <li>
+          <a href={`/topics/${topic.slug}`} aria-current={topic.slug === current ? "page" : undefined}>
+            {topic.title}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>

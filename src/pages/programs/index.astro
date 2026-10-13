@@ -1,0 +1,64 @@
+---
+import { getCollection } from "astro:content";
+import { isoDate } from "../../lib/article-display";
+import { buildDirectoryRows, sortDirectory } from "../../lib/directory";
+import { site } from "../../data/site";
+import { routeIndexable } from "../../lib/indexability";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/article.css";
+import "../../styles/directory.css";
+
+const programs = await getCollection("programs");
+const countries = await getCollection("countries");
+const directory = buildDirectoryRows(programs, countries);
+const rows = sortDirectory(directory.rows, "alphabetical");
+const description = "Programs are stored as one record each. Facts are read from the program collection.";
+---
+
+<BaseLayout title={`Programs - ${site.name}`} description={description} noindex={!routeIndexable("/programs")}>
+  <div class="directory-page shell-wrap">
+    <header class="article-header">
+      <p class="type-kicker article-kicker">Programs</p>
+      <h1 class="article-title">Programs</h1>
+      <p class="article-dek">{description}</p>
+      {
+        rows.some((row) => row.draft) && (
+          <p class="article-notice">
+            Local preview includes draft records. Draft records are omitted from the production build.
+          </p>
+        )
+      }
+    </header>
+    {
+      rows.length === 0 ? (
+        <p class="article-notice">No programs are published.</p>
+      ) : (
+        <ol class="directory-index">
+          {rows.map((row) => (
+            <li>
+              <p class="related-kicker">{row.countryName}</p>
+              <h2 class="directory-index-title">
+                <a href={row.programHref}>{row.programName}</a>
+              </h2>
+              <p class="directory-index-meta">
+                {row.draft && <span>Draft. </span>}
+                <span class="status-label" data-status={row.status}>{row.statusLabel}</span>
+                <span>. {row.programTypeLabel}. Minimum investment: {row.investmentLabel}. </span>
+                <span>Last verified: </span>
+                {
+                  row.verifiedOn ? (
+                    <time datetime={isoDate(row.verifiedOn)}>{row.verifiedLabel}</time>
+                  ) : (
+                    row.verifiedLabel
+                  )
+                }
+                .
+              </p>
+              {row.reviewNote && <p class="directory-index-meta">{row.reviewNote}</p>}
+            </li>
+          ))}
+        </ol>
+      )
+    }
+  </div>
+</BaseLayout>

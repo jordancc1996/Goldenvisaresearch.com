@@ -1,0 +1,14 @@
+---
+import TrustPage from "../components/trust/TrustPage.astro";
+import { routeIndexable } from "../lib/indexability";
+---
+
+<TrustPage
+  title="After You Submit"
+  description="This address does not confirm that a message was sent."
+  noindex={!routeIndexable("/thanks")}
+>
+  <p>
+    Opening this address does not confirm that a message was sent. A form on this site sends a message only after a form provider is configured and that provider accepts the submission. No form provider is configured.
+  </p>
+</TrustPage>

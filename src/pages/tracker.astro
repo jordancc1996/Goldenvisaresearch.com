@@ -1,0 +1,154 @@
+---
+import { getCollection } from "astro:content";
+import { isoDate, reviewWindowDays } from "../lib/article-display";
+import { buildCountryRows, buildDirectoryRows, sortDirectory } from "../lib/directory";
+import { programStatuses, programStatusLabels, programTypes, programTypeLabels } from "../lib/content-schema";
+import { site } from "../data/site";
+import { routeIndexable } from "../lib/indexability";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import "../styles/article.css";
+import "../styles/directory.css";
+
+const programs = await getCollection("programs");
+const countries = await getCollection("countries");
+const directory = buildDirectoryRows(programs, countries);
+const rows = sortDirectory(directory.rows, "alphabetical");
+const countryOptions = buildCountryRows(countries, directory.rows);
+const description = `Program status for each published program, listed alphabetically by country and name. A verified date older than ${reviewWindowDays} days is marked Review due.`;
+const countLabel = rows.length === 1 ? "1 program" : `${rows.length} programs`;
+---
+
+<BaseLayout title={`Program Status - ${site.name}`} description={description} noindex={!routeIndexable("/tracker")}>
+  <div class="directory-page shell-wrap">
+    <header class="article-header">
+      <p class="type-kicker article-kicker">Tracker</p>
+      <h1 class="article-title">Program Status</h1>
+      <p class="article-dek">{description}</p>
+      {
+        rows.some((row) => row.draft) && (
+          <p class="article-notice">
+            Local preview includes draft records. Draft records are omitted from the production build.
+          </p>
+        )
+      }
+    </header>
+    {
+      rows.length === 0 ? (
+        <p class="article-notice">No programs are published.</p>
+      ) : (
+        <div data-directory>
+          <form class="directory-filters" data-directory-form>
+            <label class="directory-field-label" for="directory-country">
+              Country
+              <select id="directory-country" data-filter="country">
+                <option value="">All countries</option>
+                {countryOptions.map((country) => (
+                  <option value={country.id}>{country.name}</option>
+                ))}
+              </select>
+            </label>
+            <label class="directory-field-label" for="directory-type">
+              Program type
+              <select id="directory-type" data-filter="type">
+                <option value="">All types</option>
+                {programTypes.map((type) => (
+                  <option value={type}>{programTypeLabels[type]}</option>
+                ))}
+              </select>
+            </label>
+            <label class="directory-field-label" for="directory-status">
+              Status
+              <select id="directory-status" data-filter="status">
+                <option value="">All statuses</option>
+                {programStatuses.map((status) => (
+                  <option value={status}>{programStatusLabels[status]}</option>
+                ))}
+              </select>
+            </label>
+            <label class="directory-field-label" for="directory-order">
+              Order
+              <select id="directory-order" data-filter="order">
+                <option value="alphabetical">Alphabetical</option>
+                <option value="verified">Recently verified</option>
+              </select>
+            </label>
+          </form>
+          <p class="directory-count" data-directory-count aria-live="polite">{countLabel}</p>
+          <div class="directory-table">
+            <div class="directory-head" aria-hidden="true">
+              <span>Country</span>
+              <span>Program</span>
+              <span>Type</span>
+              <span>Status</span>
+              <span>Minimum investment</span>
+              <span>Last verified</span>
+            </div>
+            <ol class="directory-rows">
+              {
+                rows.map((row) => (
+                  <li
+                    class="directory-row"
+                    data-directory-row
+                    data-country={row.countryId}
+                    data-type={row.programType}
+                    data-status={row.status}
+                    data-verified={row.verifiedOn ? String(row.verifiedOn.getTime()) : ""}
+                    data-country-name={row.countryName}
+                    data-program-name={row.programName}
+                  >
+                    <p class="directory-cell">
+                      <span class="directory-field">Country</span>
+                      <a href={row.countryHref}>{row.countryName}</a>
+                    </p>
+                    <p class="directory-cell">
+                      <span class="directory-field">Program</span>
+                      <a href={row.programHref}>{row.programName}</a>
+                      {row.draft && <span class="directory-draft">Draft</span>}
+                    </p>
+                    <p class="directory-cell">
+                      <span class="directory-field">Type</span>
+                      {row.programTypeLabel}
+                    </p>
+                    <p class="directory-cell">
+                      <span class="directory-field">Status</span>
+                      <span class="status-label" data-status={row.status}>{row.statusLabel}</span>
+                    </p>
+                    <p class="directory-cell">
+                      <span class="directory-field">Minimum investment</span>
+                      {row.investmentLabel}
+                    </p>
+                    <p class="directory-cell">
+                      <span class="directory-field">Last verified</span>
+                      {
+                        row.verifiedOn ? (
+                          <time datetime={isoDate(row.verifiedOn)}>{row.verifiedLabel}</time>
+                        ) : (
+                          row.verifiedLabel
+                        )
+                      }
+                      {row.reviewNote && <span class="directory-review">Review due</span>}
+                    </p>
+                  </li>
+                ))
+              }
+            </ol>
+          </div>
+        </div>
+      )
+    }
+    <section class="directory-legend" aria-labelledby="status-labels-title">
+      <h2 id="status-labels-title">Status labels</h2>
+      <p>The status column uses these words.</p>
+      <ul>
+        {programStatuses.map((status) => (
+          <li>
+            <span class="status-label" data-status={status}>{programStatusLabels[status]}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </div>
+  <script>
+    import "../scripts/directory.ts";
+  </script>
+</BaseLayout>

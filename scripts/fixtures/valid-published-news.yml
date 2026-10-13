@@ -1,0 +1,21 @@
+title: Validator fixture
+description: Structural fixture for the publish audit. This is not a citation and it is not a news report.
+publishedAt: 2026-10-12
+draft: false
+featured: false
+material: reported
+authors:
+  - demonstration-editor-one
+countries:
+  - portugal
+programTypes:
+  - unspecified
+relatedNews: []
+relatedReports: []
+sources:
+  - label: Validator fixture, not a source citation
+    url: https://validation.test/source
+verification:
+  status: verified
+  verifiedOn: 2026-10-12
+  note: Fixture field only. This note does not cite a document.

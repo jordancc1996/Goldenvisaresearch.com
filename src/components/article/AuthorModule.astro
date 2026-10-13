@@ -1,0 +1,29 @@
+---
+import type { ArticleAuthor } from "../../lib/load-article";
+
+interface Props {
+  authors: ArticleAuthor[];
+}
+
+const { authors } = Astro.props;
+---
+
+{
+  authors.length > 0 && (
+    <section class="rail-author" aria-label="Author">
+      {authors.map((author) => (
+        <div class="rail-author-entry">
+          <p class="rail-author-name">
+            {author.href ? <a href={author.href}>{author.name}</a> : author.name}
+          </p>
+          {author.summary && <p class="rail-author-summary">{author.summary}</p>}
+          {author.href && (
+            <p class="rail-author-link">
+              <a href={author.href}>Profile</a>
+            </p>
+          )}
+        </div>
+      ))}
+    </section>
+  )
+}

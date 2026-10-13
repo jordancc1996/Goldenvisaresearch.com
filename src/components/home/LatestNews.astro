@@ -1,0 +1,20 @@
+---
+import EditionHeading from "./EditionHeading.astro";
+import StoryGrid from "./StoryGrid.astro";
+import type { HomeStory } from "../../lib/load-archive";
+
+interface Props {
+  stories: HomeStory[];
+}
+
+const { stories } = Astro.props;
+---
+
+{
+  stories.length > 0 && (
+    <section class="home-section shell-wrap" aria-labelledby="latest-news">
+      <EditionHeading title="Latest news" labelledby="latest-news" href="/news" />
+      <StoryGrid stories={stories} />
+    </section>
+  )
+}

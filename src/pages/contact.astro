@@ -1,0 +1,28 @@
+---
+import EditorialForm from "../components/trust/EditorialForm.astro";
+import TrustPage from "../components/trust/TrustPage.astro";
+import { site } from "../data/site";
+import { routeIndexable } from "../lib/indexability";
+---
+
+<TrustPage
+  title="Contact"
+  description="Contact for an editorial message. No postal address is recorded."
+  noindex={!routeIndexable("/contact")}
+>
+  <p>
+    No postal address, telephone number, or named editor is recorded. This form is for an editorial message. It is not a newsletter subscription, and it does not request a LinkedIn profile.
+  </p>
+  <EditorialForm
+    id="contact"
+    endpoint={site.forms.contact}
+    subject="Editorial message"
+    submitLabel="Send message"
+    notice="The message is sent only if a form provider is configured and accepts it."
+    fields={[
+      { name: "name", label: "Name", type: "text", required: true, autocomplete: "name" },
+      { name: "email", label: "Email", type: "email", required: true, autocomplete: "email" },
+      { name: "message", label: "Message", type: "textarea", required: true },
+    ]}
+  />
+</TrustPage>

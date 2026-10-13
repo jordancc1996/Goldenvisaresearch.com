@@ -1,0 +1,16 @@
+---
+import { site } from "../../data/site";
+
+interface Props {
+  variant?: "masthead" | "footer" | "sticky";
+  id?: string;
+}
+
+const { variant = "masthead", id } = Astro.props;
+---
+
+<a id={id} class:list={["wordmark", `wordmark-${variant}`]} href="/" hidden={variant === "sticky" || undefined}>
+  <span class="wordmark-name">{site.name}</span>
+  <span class="wordmark-rule" aria-hidden="true"></span>
+  <span class="wordmark-descriptor">Investment migration news & research</span>
+</a>

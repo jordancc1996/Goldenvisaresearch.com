@@ -1,0 +1,37 @@
+---
+import { Image } from "astro:assets";
+import type { ArticleHero } from "../../lib/load-article";
+import { isImageMetadata } from "../../lib/image-metadata";
+
+interface Props {
+  hero: ArticleHero;
+  priority?: boolean;
+  sizes: string;
+}
+
+const { hero, priority = false, sizes } = Astro.props;
+const image = isImageMetadata(hero.src) ? hero.src : undefined;
+---
+
+<figure class="home-figure" style={`--focal: ${hero.focal ?? "50% 50%"}`}>
+  <div class="home-figure-frame">
+    {
+      image && (
+        <Image
+          src={image}
+          alt={hero.alt}
+          widths={priority ? [640, 960, 1280] : [480, 720]}
+          sizes={sizes}
+          format="webp"
+          loading="eager"
+          decoding="async"
+          fetchpriority={priority ? "high" : "auto"}
+        />
+      )
+    }
+  </div>
+  <figcaption>
+    <span>{hero.caption}</span>
+    <span>{hero.credit}</span>
+  </figcaption>
+</figure>

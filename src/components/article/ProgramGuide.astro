@@ -1,0 +1,124 @@
+---
+import Sources from "./Sources.astro";
+import { isoDate } from "../../lib/article-display";
+import type { ArticleSource } from "../../lib/load-article";
+
+interface Props {
+  overview: string;
+  typeLabel: string;
+  statusKey: string;
+  statusLabel: string;
+  statusNote: string;
+  legalBasis: string;
+  investmentLabel: string;
+  currencyLabel: string;
+  routesLabel: string;
+  feesLabel: string;
+  eligibility: string;
+  applicationRequirements: string;
+  applicationProcess: string;
+  processing: string;
+  physicalPresence: string;
+  familyEligibility: string;
+  citizenshipEligibility: string;
+  sources: ArticleSource[];
+  verifiedLabel: string;
+  verifiedOn?: Date;
+}
+
+const {
+  overview,
+  typeLabel,
+  statusKey,
+  statusLabel,
+  statusNote,
+  legalBasis,
+  investmentLabel,
+  currencyLabel,
+  routesLabel,
+  feesLabel,
+  eligibility,
+  applicationRequirements,
+  applicationProcess,
+  processing,
+  physicalPresence,
+  familyEligibility,
+  citizenshipEligibility,
+  sources,
+  verifiedLabel,
+  verifiedOn,
+} = Astro.props;
+---
+
+<section class="article-section" id="program-overview" aria-labelledby="program-overview-title">
+  <h2 id="program-overview-title">Program overview</h2>
+  <p>{overview}</p>
+</section>
+<section class="article-section" id="program-type" aria-labelledby="program-type-title">
+  <h2 id="program-type-title">Program type</h2>
+  <p>{typeLabel}</p>
+</section>
+<section class="article-section" id="status" aria-labelledby="status-title">
+  <h2 id="status-title">Status</h2>
+  <p class="status-label" data-status={statusKey}>{statusLabel}</p>
+  {statusNote && <p>{statusNote}</p>}
+</section>
+<section class="article-section" id="legal-basis" aria-labelledby="legal-basis-title">
+  <h2 id="legal-basis-title">Legal basis</h2>
+  <p>{legalBasis}</p>
+</section>
+<section class="article-section" id="investment-requirements" aria-labelledby="investment-requirements-title">
+  <h2 id="investment-requirements-title">Investment requirements</h2>
+  <p>Minimum investment: {investmentLabel}</p>
+  <p>Currency: {currencyLabel}</p>
+</section>
+<section class="article-section" id="investment-routes" aria-labelledby="investment-routes-title">
+  <h2 id="investment-routes-title">Investment routes</h2>
+  <p>{routesLabel}</p>
+</section>
+<section class="article-section" id="government-fees" aria-labelledby="government-fees-title">
+  <h2 id="government-fees-title">Government fees</h2>
+  <p>{feesLabel}</p>
+</section>
+<section class="article-section" id="eligibility" aria-labelledby="eligibility-title">
+  <h2 id="eligibility-title">Eligibility</h2>
+  <p>{eligibility}</p>
+</section>
+<section class="article-section" id="application-requirements" aria-labelledby="application-requirements-title">
+  <h2 id="application-requirements-title">Application requirements</h2>
+  <p>{applicationRequirements}</p>
+</section>
+<section class="article-section" id="application-process" aria-labelledby="application-process-title">
+  <h2 id="application-process-title">Application process</h2>
+  <p>{applicationProcess}</p>
+</section>
+<section class="article-section" id="processing-information" aria-labelledby="processing-information-title">
+  <h2 id="processing-information-title">Processing information</h2>
+  <p>{processing}</p>
+</section>
+<section class="article-section" id="physical-presence" aria-labelledby="physical-presence-title">
+  <h2 id="physical-presence-title">Physical presence</h2>
+  <p>{physicalPresence}</p>
+</section>
+<section class="article-section" id="family-eligibility" aria-labelledby="family-eligibility-title">
+  <h2 id="family-eligibility-title">Family eligibility</h2>
+  <p>{familyEligibility}</p>
+</section>
+<section class="article-section" id="citizenship-eligibility" aria-labelledby="citizenship-eligibility-title">
+  <h2 id="citizenship-eligibility-title">Citizenship eligibility</h2>
+  <p>{citizenshipEligibility}</p>
+</section>
+<Sources sources={sources} heading="Government sources" id="government-sources" />
+<section class="article-section" id="last-verified" aria-labelledby="last-verified-title">
+  <h2 id="last-verified-title">Last verified</h2>
+  <p>
+    {
+      verifiedOn ? (
+        <time datetime={isoDate(verifiedOn)}>{verifiedLabel}</time>
+      ) : (
+        verifiedLabel
+      )
+    }
+  </p>
+  {statusNote && <p>{statusNote}</p>}
+</section>

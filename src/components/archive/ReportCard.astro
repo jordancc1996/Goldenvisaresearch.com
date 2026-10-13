@@ -1,0 +1,30 @@
+---
+import StoryCard from "./StoryCard.astro";
+
+interface Props {
+  href: string;
+  kicker: string;
+  title: string;
+  summary: string;
+  publishedAt: Date;
+  updatedAt?: Date;
+  countries: { name: string; href?: string }[];
+  finding?: string;
+}
+
+const { href, kicker, title, summary, publishedAt, updatedAt, countries, finding } = Astro.props;
+---
+
+<li class="report-card">
+  <StoryCard
+    href={href}
+    kicker={kicker}
+    title={title}
+    summary={summary}
+    publishedAt={publishedAt}
+    updatedAt={updatedAt}
+    countries={countries}
+    level={3}
+  />
+  <p class="story-finding">{finding ?? "No findings are recorded."}</p>
+</li>

@@ -1,0 +1,25 @@
+---
+import { formatArticleDate, isoDate } from "../../lib/article-display";
+
+interface Props {
+  publishedAt: Date;
+  updatedAt?: Date;
+  plain?: boolean;
+}
+
+const { publishedAt, updatedAt, plain = false } = Astro.props;
+---
+
+<p class:list={["home-meta", { "story-byline": plain }]}>
+  <time datetime={isoDate(publishedAt)}>{formatArticleDate(publishedAt)}</time>
+  {
+    updatedAt && (
+      <>
+        <span class="meta-separator" aria-hidden="true">/</span>
+        <span>
+          Updated <time datetime={isoDate(updatedAt)}>{formatArticleDate(updatedAt)}</time>
+        </span>
+      </>
+    )
+  }
+</p>

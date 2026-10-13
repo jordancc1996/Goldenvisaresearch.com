@@ -1,0 +1,22 @@
+title: Invalid zero threshold
+description: Schema fixture with an investment amount of zero.
+publishedAt: 2026-10-12
+draft: true
+material: demonstration
+authors:
+  - demonstration-editor-one
+country: portugal
+programType: unspecified
+recordStatus: unverified
+legalBasis: Fixture
+minimumInvestment:
+  state: stated
+  currency: EUR
+  amount: 0
+eligibility: Fixture
+applicationProcess: Fixture
+processing: Fixture
+familyEligibility: Fixture
+sources: []
+verification:
+  status: unverified

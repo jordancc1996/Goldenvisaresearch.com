@@ -1,0 +1,17 @@
+---
+import ArticleLayout from "../../layouts/ArticleLayout.astro";
+import { loadArticle, type ArticleCollection } from "../../lib/load-article";
+
+interface Props {
+  collection: ArticleCollection;
+  id: string;
+}
+
+const { collection, id } = Astro.props;
+const model = await loadArticle(collection, id);
+const { Content } = model;
+---
+
+<ArticleLayout model={model}>
+  <Content />
+</ArticleLayout>

@@ -1,0 +1,127 @@
+---
+import EmptyState from "../archive/EmptyState.astro";
+import StoryGrid from "../home/StoryGrid.astro";
+import StoryRow from "../archive/StoryRow.astro";
+import DesignNotice from "../home/DesignNotice.astro";
+import TopicLinks from "./TopicLinks.astro";
+import { isoDate } from "../../lib/article-display";
+import type { TopicPage } from "../../data/topics";
+import type { ArchiveStory } from "../../lib/archive";
+import "../../styles/edition.css";
+
+interface Props {
+  page: TopicPage;
+  news: ArchiveStory[];
+  reports: ArchiveStory[];
+  countries: { name: string; href: string; verifiedLabel: string; verifiedOn?: Date }[];
+}
+
+const { page, news, reports, countries } = Astro.props;
+const newsFeature = news.slice(0, Math.min(6, news.length));
+const newsRows = news.slice(newsFeature.length);
+const reportFeature = reports.slice(0, Math.min(6, reports.length));
+const reportRows = reports.slice(reportFeature.length);
+const desk = news.some((story) => story.desk) || reports.some((story) => story.desk);
+---
+
+<div class="archive-page edition-archive shell-wrap topic-hub">
+  <DesignNotice show={desk} />
+  <header class="article-header">
+    <p class="type-kicker article-kicker">Topic</p>
+    <h1 class="article-title">{page.title}</h1>
+    <p class="article-dek">{page.description}</p>
+  </header>
+  <TopicLinks current={page.slug} />
+  <div class="topic-scope">
+    {page.scope.map((paragraph) => <p>{paragraph}</p>)}
+  </div>
+  <section class="topic-section" aria-labelledby="topic-news">
+    <h2 id="topic-news">News</h2>
+    {
+      news.length === 0 ? (
+        <EmptyState message="No news is published for this topic." />
+      ) : (
+        <>
+          <StoryGrid stories={newsFeature} />
+          {newsRows.length > 0 && (
+            <ol class="story-rows">
+              {newsRows.map((story) => (
+                <StoryRow
+                  href={story.href}
+                  kicker={story.categoryLabel}
+                  title={story.title}
+                  summary={story.summary}
+                  publishedAt={story.publishedAt}
+                  countries={story.countries}
+                  level={3}
+                />
+              ))}
+            </ol>
+          )}
+        </>
+      )
+    }
+    <p class="topic-more"><a class="text-link" href="/news">All news</a></p>
+  </section>
+  <section class="topic-section" aria-labelledby="topic-research">
+    <h2 id="topic-research">Research</h2>
+    {
+      reports.length === 0 ? (
+        <EmptyState message="No research reports are published for this topic." />
+      ) : (
+        <>
+          <StoryGrid stories={reportFeature} />
+          {reportRows.length > 0 && (
+            <ol class="story-rows">
+              {reportRows.map((story) => (
+                <StoryRow
+                  href={story.href}
+                  kicker={story.categoryLabel}
+                  title={story.title}
+                  summary={story.summary}
+                  publishedAt={story.publishedAt}
+                  countries={story.countries}
+                  level={3}
+                />
+              ))}
+            </ol>
+          )}
+        </>
+      )
+    }
+    <p class="topic-more"><a class="text-link" href="/reports">All research</a></p>
+  </section>
+  <section class="topic-section" aria-labelledby="topic-countries">
+    <h2 id="topic-countries">Country coverage</h2>
+    {
+      countries.length === 0 ? (
+        <EmptyState message="No country profiles are published for this topic." />
+      ) : (
+        <ul class="topic-countries">
+          {countries.map((country) => (
+            <li>
+              <a href={country.href}>{country.name}</a>
+              <span>
+                Last verified:{" "}
+                {country.verifiedOn ? (
+                  <time datetime={isoDate(country.verifiedOn)}>{country.verifiedLabel}</time>
+                ) : (
+                  country.verifiedLabel
+                )}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+    <p class="topic-more"><a class="text-link" href="/countries">All countries</a></p>
+  </section>
+  {
+    page.questions.map((question) => (
+      <section class="topic-section">
+        <h2>{question.heading}</h2>
+        <p>{question.answer}</p>
+      </section>
+    ))
+  }
+</div>

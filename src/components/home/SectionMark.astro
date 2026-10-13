@@ -1,0 +1,13 @@
+---
+interface Props {
+  title: string;
+  labelledby: string;
+}
+
+const { title, labelledby } = Astro.props;
+---
+
+<div class="section-mark">
+  <span class="section-accent"></span>
+  <h2 id={labelledby} class="type-section">{title}</h2>
+</div>

@@ -1,0 +1,41 @@
+---
+interface Item {
+  label: string;
+  href?: string;
+  value?: string;
+  current?: boolean;
+  pressed?: boolean;
+}
+
+interface Props {
+  label: string;
+  items: Item[];
+}
+
+const { label, items } = Astro.props;
+const useButtons = items.some((item) => item.value !== undefined && !item.href);
+---
+
+{
+  useButtons ? (
+    <div class="archive-filters" role="group" aria-label={label}>
+      {items.map((item) => (
+        <button type="button" data-archive-filter={item.value} aria-pressed={item.pressed ? "true" : "false"}>
+          {item.label}
+        </button>
+      ))}
+    </div>
+  ) : (
+    <nav class="archive-filters" aria-label={label}>
+      <ul>
+        {items.map((item) => (
+          <li>
+            <a href={item.href} aria-current={item.current ? "page" : undefined}>
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}

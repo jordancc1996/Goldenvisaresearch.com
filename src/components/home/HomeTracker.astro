@@ -1,0 +1,65 @@
+---
+import { formatArticleDate, isoDate } from "../../lib/article-display";
+import type { DirectoryRow } from "../../lib/directory";
+import EditionHeading from "./EditionHeading.astro";
+
+interface Props {
+  rows: DirectoryRow[];
+}
+
+const { rows } = Astro.props;
+const recent = rows.filter((row) => row.verifiedOn).slice(0, 6);
+---
+
+<section class="home-section shell-wrap" aria-labelledby="home-tracker">
+  <EditionHeading title="Program status tracker" labelledby="home-tracker" href="/tracker" />
+  {
+    recent.length === 0 ? (
+      <p class="home-status">No verified programs are published.</p>
+    ) : (
+      <>
+        <p class="home-note">Recently verified program records.</p>
+        <div class="home-tracker">
+          <div class="home-tracker-head" aria-hidden="true">
+            <span>Country</span>
+            <span>Program</span>
+            <span>Status</span>
+            <span>Minimum investment</span>
+            <span>Last verified</span>
+          </div>
+          <ol class="home-tracker-rows">
+            {recent.map((row) => (
+              <li>
+                <span>
+                  <span class="home-field">Country</span>
+                  <a href={row.countryHref}>{row.countryName}</a>
+                </span>
+                <span>
+                  <span class="home-field">Program</span>
+                  <a href={row.programHref}>{row.programName}</a>
+                </span>
+                <span>
+                  <span class="home-field">Status</span>
+                  {row.statusLabel}
+                  {row.review === "review-due" && <span class="home-review">{row.reviewNote}</span>}
+                </span>
+                <span>
+                  <span class="home-field">Minimum investment</span>
+                  {row.investmentLabel}
+                </span>
+                <span>
+                  <span class="home-field">Last verified</span>
+                  {row.verifiedOn ? (
+                    <time datetime={isoDate(row.verifiedOn)}>{formatArticleDate(row.verifiedOn)}</time>
+                  ) : (
+                    row.verifiedLabel
+                  )}
+                </span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </>
+    )
+  }
+</section>

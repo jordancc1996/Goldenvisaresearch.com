@@ -1,0 +1,45 @@
+---
+import { getCollection } from "astro:content";
+import CorrectionsList from "../components/trust/CorrectionsList.astro";
+import EditorialForm from "../components/trust/EditorialForm.astro";
+import TrustPage from "../components/trust/TrustPage.astro";
+import { site } from "../data/site";
+import { routeIndexable } from "../lib/indexability";
+import { visibleInProduction } from "../lib/content";
+
+const entries = await getCollection("corrections");
+const published = entries
+  .filter((entry) => visibleInProduction(entry))
+  .sort((left, right) => right.data.publishedAt.getTime() - left.data.publishedAt.getTime());
+---
+
+<TrustPage
+  title="Corrections"
+  description="Corrections log for published pages. No historical corrections are invented."
+  noindex={!routeIndexable("/corrections")}
+>
+  <h2>Substantive updates</h2>
+  <p>
+    A substantive change to a published file is recorded with an updated date on that file. The updated date is not a correction by itself. A correction is a separate record that states the previous wording, the corrected wording, and a source.
+  </p>
+  <h2>Log</h2>
+  <CorrectionsList items={published} />
+  <h2>Report a correction</h2>
+  <p>
+    Use this form to report a factual error. It is not a newsletter subscription. LinkedIn is not requested.
+  </p>
+  <EditorialForm
+    id="correction"
+    endpoint={site.forms.correction}
+    subject="Correction report"
+    submitLabel="Send correction report"
+    notice="The report is sent only if a form provider is configured and accepts it."
+    fields={[
+      { name: "name", label: "Name", type: "text", autocomplete: "name" },
+      { name: "email", label: "Email", type: "email", required: true, autocomplete: "email" },
+      { name: "page", label: "Page address", type: "url", required: true, autocomplete: "url" },
+      { name: "correction", label: "What is wrong", type: "textarea", required: true },
+      { name: "source", label: "Source address, if you have one", type: "url", autocomplete: "url" },
+    ]}
+  />
+</TrustPage>

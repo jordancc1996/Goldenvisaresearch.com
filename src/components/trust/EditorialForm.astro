@@ -1,0 +1,90 @@
+---
+import { site } from "../../data/site";
+
+export type FormField = {
+  name: string;
+  label: string;
+  type: "text" | "email" | "url" | "textarea" | "checkbox";
+  required?: boolean;
+  autocomplete?: string;
+};
+
+interface Props {
+  id: string;
+  endpoint: string | null;
+  subject: string;
+  fields: FormField[];
+  submitLabel: string;
+  notice: string;
+}
+
+const { id, endpoint, subject, fields, submitLabel, notice } = Astro.props;
+const configured = Boolean(endpoint);
+---
+
+<form
+  class="editorial-form"
+  method="post"
+  action={configured ? endpoint ?? undefined : undefined}
+  data-editorial-form
+  data-endpoint={endpoint ?? ""}
+  novalidate
+  onsubmit={configured ? undefined : "return false"}
+>
+  <p class="form-notice">{notice} <a href="/privacy">Privacy</a></p>
+  <p class="form-honeypot">
+    <label for={`${id}-gotcha`}>Leave this field empty</label>
+    <input id={`${id}-gotcha`} name="_gotcha" type="text" tabindex="-1" autocomplete="off" />
+  </p>
+  <input type="hidden" name="_subject" value={subject} />
+  {
+    fields.map((field) => (
+      <p class="form-field">
+        <label for={`${id}-${field.name}`}>{field.label}</label>
+        {field.type === "textarea" ? (
+          <textarea
+            id={`${id}-${field.name}`}
+            name={field.name}
+            required={field.required}
+            autocomplete={field.autocomplete}
+            aria-describedby={`${id}-${field.name}-error`}
+          />
+        ) : field.type === "checkbox" ? (
+          <input
+            id={`${id}-${field.name}`}
+            name={field.name}
+            type="checkbox"
+            value="yes"
+            required={field.required}
+            aria-describedby={`${id}-${field.name}-error`}
+          />
+        ) : (
+          <input
+            id={`${id}-${field.name}`}
+            name={field.name}
+            type={field.type}
+            required={field.required}
+            autocomplete={field.autocomplete}
+            aria-describedby={`${id}-${field.name}-error`}
+          />
+        )}
+        <span id={`${id}-${field.name}-error`} class="form-field-error" data-error-for={`${id}-${field.name}`} />
+      </p>
+    ))
+  }
+  <button class="button" type="submit">{submitLabel}</button>
+  <p class="form-status" data-form-status role="status" aria-live="polite"></p>
+  {!configured && <p class="form-notice">Form provider: not configured. {site.name} does not send this form.</p>}
+  <noscript>
+    <p class="form-notice">
+      {
+        configured
+          ? "Without JavaScript, the form is sent directly to the form provider."
+          : "Without JavaScript, this form still does not send a message, because no form provider is configured."
+      }
+    </p>
+  </noscript>
+</form>
+<script>
+  import "../../scripts/forms.ts";
+</script>

@@ -1,0 +1,19 @@
+---
+description: Editorial accent color for Golden Visa Research
+alwaysApply: true
+---
+
+# Brand color
+
+The editorial accent is blue.
+
+- Primary blue: `#154C7E`. Token: `--color-accent`.
+- Hover and active blue: `#103B63`. Token: `--color-accent-hover`.
+
+Use the accent for section headings, category labels, editorial links, navigation hover and current states, section marks, newsletter separators, and focus outlines.
+
+Keep the masthead wordmark, article headlines, body text, and author names in ink (`#080808`). Keep hairline dividers on the rule color (`#E2E2E2`). Do not fill sections with a blue background.
+
+Do not use crimson, `#D7193F`, or a `--color-crimson` token for editorial elements.
+
+`--color-error` (`#D7193F`) is only for invalid form fields. Status labels stay separate from the brand accent. Do not identify a link, a selected control, or an error by color alone.

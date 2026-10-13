@@ -1,0 +1,54 @@
+---
+import Figure from "./Figure.astro";
+import { formatArticleDate, isoDate } from "../../lib/article-display";
+import type { RelatedCard } from "../../lib/load-article";
+
+interface Props {
+  label: string;
+  items: RelatedCard[];
+  id?: string;
+  empty?: string;
+}
+
+const {
+  label,
+  items,
+  id = "related-coverage",
+  empty = "No related coverage is recorded.",
+} = Astro.props;
+---
+
+<section class="article-section" id={id} aria-labelledby={`${id}-title`}>
+  <h2 id={`${id}-title`}>{label}</h2>
+  {
+    items.length === 0 ? (
+      <p class="related-empty">{empty}</p>
+    ) : (
+      <ol class="related-list">
+        {items.map((item) => (
+          <li>
+            {item.hero && (
+              <div class="related-figure">
+                <Figure
+                  src={item.hero.src}
+                  alt={item.hero.alt}
+                  caption={item.hero.caption}
+                  credit={item.hero.credit}
+                  focal={item.hero.focal}
+                  compact
+                />
+              </div>
+            )}
+            <p class="related-kicker">{item.category}</p>
+            <h3 class="related-title">
+              <a href={item.href}>{item.title}</a>
+            </h3>
+            <p class="related-date">
+              <time datetime={isoDate(item.publishedAt)}>{formatArticleDate(item.publishedAt)}</time>
+            </p>
+          </li>
+        ))}
+      </ol>
+    )
+  }
+</section>

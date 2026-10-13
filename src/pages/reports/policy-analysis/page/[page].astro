@@ -1,0 +1,13 @@
+---
+import ResearchArchive from "../../../../components/archive/ResearchArchive.astro";
+import { reportPagePaths } from "../../../../lib/load-archive";
+
+export async function getStaticPaths() {
+  return reportPagePaths("policy-analysis");
+}
+
+const page = Number(Astro.params.page);
+if (!Number.isInteger(page) || page < 2) throw new Error("Missing policy analysis page");
+---
+
+<ResearchArchive type="policy-analysis" page={page} />

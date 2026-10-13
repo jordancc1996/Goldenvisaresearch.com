@@ -1,0 +1,100 @@
+---
+import ArchiveFilters from "./ArchiveFilters.astro";
+import TopicLinks from "../topic/TopicLinks.astro";
+import DesignNotice from "../home/DesignNotice.astro";
+import EmptyState from "./EmptyState.astro";
+import Pagination from "./Pagination.astro";
+import ReportCard from "./ReportCard.astro";
+import StoryGrid from "../home/StoryGrid.astro";
+import {
+  filterReports,
+  paginate,
+  paginationLinks,
+  researchArchiveTypes,
+  splitFeatured,
+  type ResearchArchiveSlug,
+} from "../../lib/archive";
+import { loadPublishedReports } from "../../lib/load-archive";
+import { titleCase } from "../../lib/headings";
+import { routeIndexable } from "../../lib/indexability";
+import { documentTitle } from "../../lib/metadata";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/article.css";
+import "../../styles/archive.css";
+import "../../styles/edition.css";
+
+interface Props {
+  type?: ResearchArchiveSlug;
+  page?: number;
+}
+
+const { type, page = 1 } = Astro.props;
+const filtered = filterReports(await loadPublishedReports(), type);
+const split = splitFeatured(filtered);
+const featured = page === 1 ? split.featured : undefined;
+const result = paginate(split.rest, page);
+const meta = researchArchiveTypes.find((item) => item.slug === type);
+const heading = titleCase(meta?.label ?? "Research");
+const description = meta?.description ?? "Research reports, with publication dates and finding previews.";
+const title = documentTitle(page > 1 ? `${heading}, Page ${page}` : heading);
+const base = type ? `/reports/${type}` : "/reports";
+const links = paginationLinks(base, result.page, result.pages);
+const empty = meta ? `No ${meta.label.toLowerCase()} reports are published.` : "No research reports are published.";
+const pool = page === 1 ? [featured, ...result.items].filter((item) => item !== undefined) : [];
+const feature = pool.slice(0, Math.min(6, pool.length));
+const featureIds = new Set(feature.map((item) => item.id));
+const rows = result.items.filter((item) => !featureIds.has(item.id));
+const desk = filtered.some((story) => story.desk);
+const filters = [
+  { label: "All research", href: "/reports", current: !type },
+  ...researchArchiveTypes.map((item) => ({
+    label: item.label,
+    href: `/reports/${item.slug}`,
+    current: item.slug === type,
+  })),
+];
+---
+
+<BaseLayout title={title} description={description} prev={links.prev} next={links.next} noindex={!routeIndexable(base)}>
+  <div class="archive-page edition-archive shell-wrap">
+    <DesignNotice show={desk} />
+    <header class="article-header">
+      {meta && <p class="type-kicker article-kicker">Research</p>}
+      <h1 class="article-title">{heading}</h1>
+      <p class="article-dek">
+        {description}{result.total > 0 ? " Twenty reports appear on each page." : ""}
+      </p>
+    </header>
+    <ArchiveFilters label="Research types" items={filters} />
+    <TopicLinks />
+    {
+      result.total === 0 && !featured ? (
+        <EmptyState message={empty} />
+      ) : (
+        <>
+          {feature.length > 0 && <StoryGrid stories={feature} />}
+          {rows.length > 0 && (
+            <section class="archive-follow" aria-labelledby={feature.length > 0 ? "earlier-research" : undefined}>
+              {feature.length > 0 && <h2 id="earlier-research">Earlier reports</h2>}
+              <ol class="story-rows">
+                {rows.map((story) => (
+                  <ReportCard
+                    href={story.href}
+                    kicker={story.categoryLabel}
+                    title={story.title}
+                    summary={story.summary}
+                    publishedAt={story.publishedAt}
+                    updatedAt={story.updatedAt}
+                    countries={story.countries}
+                    finding={story.finding}
+                  />
+                ))}
+              </ol>
+            </section>
+          )}
+        </>
+      )
+    }
+    <Pagination page={result.page} pages={result.pages} base={base} />
+  </div>
+</BaseLayout>

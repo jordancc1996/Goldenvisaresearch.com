@@ -1,0 +1,20 @@
+---
+import TrustPage from "../components/trust/TrustPage.astro";
+import { routeIndexable } from "../lib/indexability";
+---
+
+<TrustPage
+  title="Disclaimer"
+  description="Disclaimer for this publication. Golden Visa Research is not legal, tax, or immigration advice."
+  noindex={!routeIndexable("/disclaimer")}
+>
+  <p>
+    Golden Visa Research is an informational publication. It is not legal advice, tax advice, or immigration advice. Reading a page does not create a professional relationship.
+  </p>
+  <p>
+    A program rule, fee, or investment amount is only as current as the last verified date and the cited source on that page. A status marked Unverified, a figure marked Unknown, and a file that is not published are not confirmed facts.
+  </p>
+  <p>
+    No lawyer has reviewed this text. No government has endorsed the site. Rules for residence and citizenship change, and a published page can be wrong until a correction is recorded.
+  </p>
+</TrustPage>

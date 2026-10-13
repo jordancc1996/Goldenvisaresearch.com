@@ -1,0 +1,19 @@
+---
+import type { ImageMetadata } from "astro";
+import Figure from "./Figure.astro";
+
+interface Props {
+  alt: string;
+  caption: string;
+  credit: string;
+  focal?: string;
+}
+
+const { alt, caption, credit, focal } = Astro.props;
+let src: ImageMetadata | undefined;
+if (import.meta.env.DEV) {
+  src = (await import("../../assets/demonstration-figure.webp")).default;
+}
+---
+
+{src && <Figure src={src} alt={alt} caption={caption} credit={credit} focal={focal} />}

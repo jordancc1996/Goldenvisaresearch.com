@@ -1,0 +1,147 @@
+---
+import {
+  editionNav,
+  moreNav,
+  navIsCurrent,
+  newsletterLink,
+  sectionDirectory,
+} from "../../data/navigation";
+import SiteFooter from "./SiteFooter.astro";
+import Wordmark from "./Wordmark.astro";
+import "../../styles/shell.css";
+
+interface Props {
+  crumbs?: { label: string; href?: string }[];
+}
+
+Astro.props;
+
+const searchQuery = Astro.url.searchParams.get("q") ?? "";
+const path = Astro.url.pathname;
+
+function current(href: string) {
+  return navIsCurrent(path, href) ? "page" : undefined;
+}
+
+const moreCurrent = moreNav.some((item) => navIsCurrent(path, item.href));
+---
+
+<a class="skip-link" href="#main">Skip to content</a>
+<header id="masthead" class="masthead">
+  <div class="shell-wrap masthead-brand">
+    <div class="masthead-side"></div>
+    <div class="masthead-center">
+      <Wordmark variant="masthead" />
+    </div>
+    <a class="masthead-subscribe" href={newsletterLink.href}>{newsletterLink.label}</a>
+  </div>
+</header>
+<div id="nav-sentinel" class="nav-sentinel"></div>
+<div id="edition-nav" class="edition-nav">
+  <div class="shell-wrap edition-nav-row">
+    <Wordmark id="edition-brand" variant="sticky" />
+    <div class="edition-tools">
+      <button
+        id="sections-trigger"
+        class="edition-tool"
+        type="button"
+        aria-expanded="false"
+        aria-controls="sections-panel"
+      >
+        <span class="nav-burger" aria-hidden="true"><span></span><span></span><span></span></span>
+        All sections
+      </button>
+      <span class="nav-sep" aria-hidden="true"></span>
+      <button
+        id="search-trigger"
+        class="edition-tool edition-search-trigger"
+        type="button"
+        aria-expanded="false"
+        aria-controls="search-panel"
+        aria-label="Search"
+      >
+        <svg class="nav-search-icon" viewBox="0 0 16 16" aria-hidden="true">
+          <circle cx="6.5" cy="6.5" r="4.25" fill="none" stroke="currentColor" stroke-width="1.4"></circle>
+          <path d="M10 10.2 13.4 13.6" fill="none" stroke="currentColor" stroke-width="1.4"></path>
+        </svg>
+      </button>
+      <span class="nav-sep nav-sep-links" aria-hidden="true"></span>
+    </div>
+    <nav class="edition-links" aria-label="Primary">
+      <ul>
+        {
+          editionNav.map((item) => (
+            <li>
+              <a href={item.href} aria-current={current(item.href)}>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+        <li>
+          <button
+            id="more-trigger"
+            class="edition-tool edition-more-trigger"
+            type="button"
+            aria-expanded="false"
+            aria-controls="more-panel"
+            aria-current={moreCurrent ? "true" : undefined}
+          >
+            More
+          </button>
+        </li>
+      </ul>
+    </nav>
+  </div>
+  <div id="sections-panel" class="edition-panel" hidden>
+    <div class="shell-wrap section-directory">
+      {
+        sectionDirectory.map((group) => (
+          <section>
+            <p class="section-directory-label">{group.label}</p>
+            <ul>
+              {group.items.map((item) => (
+                <li>
+                  <a href={item.href} aria-current={current(item.href)}>
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))
+      }
+    </div>
+  </div>
+  <div id="search-panel" class="edition-panel" hidden>
+    <div class="shell-wrap">
+      <form id="site-search" class="edition-search-form" role="search" action="/search" method="get">
+        <label class="search-label" for="q">Search</label>
+        <input id="q" name="q" type="search" autocomplete="off" value={searchQuery} />
+        <button class="search-submit" type="submit">Search</button>
+      </form>
+    </div>
+  </div>
+  <div id="more-panel" class="edition-panel" hidden>
+    <div class="shell-wrap more-panel-wrap">
+      <ul>
+        {
+          moreNav.map((item) => (
+            <li>
+              <a href={item.href} aria-current={current(item.href)}>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</div>
+<main id="main">
+  <slot />
+</main>
+<SiteFooter />
+<script>
+  import "../../scripts/shell.ts";
+</script>

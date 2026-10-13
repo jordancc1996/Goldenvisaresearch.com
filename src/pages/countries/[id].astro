@@ -1,0 +1,15 @@
+---
+import CountryProfile from "../../layouts/CountryProfile.astro";
+import { articlePaths } from "../../lib/load-article";
+import { loadCountryProfile } from "../../lib/load-country";
+
+export async function getStaticPaths() {
+  return articlePaths("countries");
+}
+
+const id = Astro.params.id;
+if (!id) throw new Error("Missing country id");
+const profile = await loadCountryProfile(id);
+---
+
+<CountryProfile profile={profile} />

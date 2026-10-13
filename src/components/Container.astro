@@ -1,0 +1,14 @@
+---
+interface Props {
+  width?: "page" | "measure";
+  as?: "div" | "section";
+  id?: string;
+}
+
+const { width = "page", as: Tag = "div", id } = Astro.props;
+const className = width === "page" ? "page-container" : "measure";
+---
+
+<Tag id={id} class={className}>
+  <slot />
+</Tag>

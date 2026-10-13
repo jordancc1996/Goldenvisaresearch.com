@@ -1,0 +1,13 @@
+---
+import PressArchive from "../../../components/archive/PressArchive.astro";
+import { pressPagePaths } from "../../../lib/load-archive";
+
+export async function getStaticPaths() {
+  return pressPagePaths();
+}
+
+const page = Number(Astro.params.page);
+if (!Number.isInteger(page) || page < 2) throw new Error("Missing press page");
+---
+
+<PressArchive page={page} />

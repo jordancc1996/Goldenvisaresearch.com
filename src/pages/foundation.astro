@@ -1,0 +1,107 @@
+---
+import Button from "../components/Button.astro";
+import Container from "../components/Container.astro";
+import Meta from "../components/Meta.astro";
+import Rule from "../components/Rule.astro";
+import SectionMark from "../components/SectionMark.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { site } from "../data/site";
+import { routeIndexable } from "../lib/indexability";
+---
+
+<BaseLayout
+  title="Foundation - Golden Visa Research"
+  description="Foundation check for Source Serif 4, Inter, color tokens, the section accent, and the 680px measure."
+  noindex={!routeIndexable("/foundation")}
+>
+  <Container>
+    <p class="type-kicker">Foundation</p>
+    <div class="specimen-grid">
+      <div>
+        <h1 class="type-lead">Type, color, and measure.</h1>
+        <p class="type-deck">
+          This page checks the publication type scale, the five brand colors,
+          the section accent, and the article measure. It is not a homepage.
+        </p>
+        <Meta
+          section="Foundation"
+          date={new Date("2026-10-12T00:00:00Z")}
+          verified={false}
+        />
+      </div>
+      <div>
+        <p class="type-ui">
+          Page width 1280px. Article measure 680px. Section space 64px. The lead
+          headline is 32px below 768px and 46px from 768px up.
+        </p>
+        <p class="type-ui note-gap">
+          Canonical origin: {site.origin ?? "not set"}. Trailing slash: {site.trailingSlash}.
+        </p>
+      </div>
+    </div>
+
+    <div class="stack-section">
+      <Rule />
+    </div>
+
+    <div class="stack-section">
+      <SectionMark label="Color" level={2} />
+      <ul class="token-list">
+        <li class="token-row">
+          <span class="swatch bg-white"></span>
+          <p class="type-ui">White #FFFFFF. Page background.</p>
+        </li>
+        <li class="token-row">
+          <span class="swatch bg-ink"></span>
+          <p class="type-ui">Ink #080808. Headlines and body text.</p>
+        </li>
+        <li class="token-row">
+          <span class="swatch bg-accent"></span>
+          <p class="type-ui">Blue #154C7E. Accent, kickers, and links. Hover and active states use #103B63.</p>
+        </li>
+        <li class="token-row">
+          <span class="swatch bg-charcoal"></span>
+          <p class="type-ui">Charcoal #343239. Decks and metadata.</p>
+        </li>
+        <li class="token-row">
+          <span class="swatch bg-mist"></span>
+          <p class="type-ui">Mist #F5F5F5. Rare supporting band.</p>
+        </li>
+        <li class="token-row">
+          <span class="swatch bg-rule"></span>
+          <p class="type-ui">Rule #E2E2E2. Hairlines only.</p>
+        </li>
+      </ul>
+    </div>
+
+    <div class="stack-section">
+      <SectionMark label="Controls" level={2} />
+      <div class="control-row">
+        <Button label="Primary action" />
+        <a class="text-link" href="#main">Text link</a>
+      </div>
+    </div>
+
+    <div class="stack-section">
+      <SectionMark label="Article text" level={2} />
+      <Container width="measure">
+        <p class="type-body">
+          This column is the article measure. Body text uses Source Serif 4
+          at 18px from 768px up, and 17px below that width. The line height is
+          1.7. The column stops at 680px.
+        </p>
+        <p class="type-body">
+          Navigation, metadata, and controls use Inter. Headlines and this
+          paragraph stay in Source Serif 4. The blue bar above the section
+          label is 48px by 4px.
+        </p>
+      </Container>
+      <div class="mist-band">
+        <p class="type-ui">
+          Mist is reserved for a source note or a table band. It is not a card
+          background.
+        </p>
+      </div>
+    </div>
+  </Container>
+</BaseLayout>

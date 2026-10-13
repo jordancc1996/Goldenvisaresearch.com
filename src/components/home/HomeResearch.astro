@@ -1,0 +1,22 @@
+---
+import type { HomeStory } from "../../lib/load-archive";
+import EditionHeading from "./EditionHeading.astro";
+import StoryGrid from "./StoryGrid.astro";
+
+interface Props {
+  stories: HomeStory[];
+}
+
+const { stories } = Astro.props;
+---
+
+<section class="home-section shell-wrap" aria-labelledby="home-research">
+  <EditionHeading title="Research and reports" labelledby="home-research" href="/reports" />
+  {
+    stories.length === 0 ? (
+      <p class="home-status">No research reports are published.</p>
+    ) : (
+      <StoryGrid stories={stories} />
+    )
+  }
+</section>

@@ -1,0 +1,44 @@
+---
+import TrustPage from "../components/trust/TrustPage.astro";
+import { routeIndexable } from "../lib/indexability";
+import { reviewWindowDays } from "../lib/article-display";
+---
+
+<TrustPage
+  title="Editorial Standards"
+  description="Editorial standards for what this site publishes, and the decisions that are not recorded."
+  noindex={!routeIndexable("/editorial-standards")}
+>
+  <h2>Publication rule</h2>
+  <p>
+    A file is published only when it is not a draft and it is not demonstration material. If the file has a verification record, that record must be verified and it must include a date. The production build rejects a published file that contains the marker [VERIFY], a placeholder source, or an incomplete verification.
+  </p>
+  <h2>Source attribution</h2>
+  <p>
+    A published file with a verification record must cite at least one https source. The source label and URL are shown on the page. The build does not decide whether the host is a government website.
+  </p>
+  <h2>Program status and investment figures</h2>
+  <p>
+    The words Active, Under review, Suspended, and Closed appear only when verification is complete. Otherwise the status is Unverified. An investment amount appears only when the file states a positive amount in a named currency and verification is complete. Unknown, unpublished, and unverified amounts keep those words. They are not shown as zero.
+  </p>
+  <h2>Last verified</h2>
+  <p>
+    Last verified is the date on the verification record. A verified date older than {reviewWindowDays} days is marked Review due and is not presented as current. The {reviewWindowDays}-day window is the setting in the current build. A separate editorial policy has not chosen a different window.
+  </p>
+  <h2>Editorial independence</h2>
+  <p>
+    No owner, funder, or advertising client is recorded. The site does not carry a paid program placement in this build.
+  </p>
+  <h2>Conflicts of interest</h2>
+  <p>
+    No conflict register is recorded. No rule for gifts, retainers, or referral fees has been approved. This page does not invent one.
+  </p>
+  <h2>Use of AI tools</h2>
+  <p>
+    No rule for the use of AI tools in reporting has been approved. This page does not describe an AI workflow. Demonstration files and incomplete verification cannot be published.
+  </p>
+  <h2>What has not occurred</h2>
+  <p>
+    No legal review of this site is recorded. No professional credential is recorded for an author. No published file currently carries a completed verification.
+  </p>
+</TrustPage>

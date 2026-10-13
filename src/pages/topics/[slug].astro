@@ -1,0 +1,45 @@
+---
+import { getCollection } from "astro:content";
+import TopicHub from "../../components/topic/TopicHub.astro";
+import { topicPage, topicPages } from "../../data/topics";
+import { routeIndexable } from "../../lib/indexability";
+import { documentTitle } from "../../lib/metadata";
+import { verifiedLabel } from "../../lib/article-display";
+import { loadPublishedNews, loadPublishedReports } from "../../lib/load-archive";
+import { countriesForTopic, referencedCountryIds } from "../../lib/topic-assign";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/article.css";
+import "../../styles/archive.css";
+
+export async function getStaticPaths() {
+  return topicPages.map((page) => ({ params: { slug: page.slug } }));
+}
+
+const { slug } = Astro.params;
+const page = topicPage(slug ?? "");
+if (!page) throw new Error(`Unknown topic: ${slug}`);
+const [news, reports, countries, programs] = await Promise.all([
+  getCollection("news"),
+  getCollection("reports"),
+  getCollection("countries"),
+  getCollection("programs"),
+]);
+const publishedNews = (await loadPublishedNews()).filter((story) => story.topic === page.slug);
+const publishedReports = (await loadPublishedReports()).filter((story) => story.topic === page.slug);
+const referenced = referencedCountryIds([...news, ...reports, ...programs], page.slug);
+const covered = countriesForTopic(countries, referenced, page.slug).map((country) => {
+  const verification = country.data.verification;
+  const verifiedOn =
+    verification?.status === "verified" && verification.verifiedOn ? verification.verifiedOn : undefined;
+  return {
+    name: country.data.name,
+    href: `/countries/${country.id}`,
+    verifiedLabel: verifiedLabel(verification ?? { status: "unverified" }),
+    verifiedOn,
+  };
+});
+---
+
+<BaseLayout title={documentTitle(page.title)} description={page.description} noindex={!routeIndexable(`/topics/${page.slug}`)}>
+  <TopicHub page={page} news={publishedNews} reports={publishedReports} countries={covered} />
+</BaseLayout>

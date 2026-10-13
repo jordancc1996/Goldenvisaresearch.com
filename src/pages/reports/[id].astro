@@ -1,0 +1,13 @@
+---
+import ArticleView from "../../components/article/ArticleView.astro";
+import { articlePaths } from "../../lib/load-article";
+
+export async function getStaticPaths() {
+  return articlePaths("reports");
+}
+
+const id = Astro.params.id;
+if (!id) throw new Error("Missing report id");
+---
+
+<ArticleView collection="reports" id={id} />

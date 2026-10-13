@@ -1,0 +1,17 @@
+---
+import EditionHeading from "./EditionHeading.astro";
+import StoryGrid from "./StoryGrid.astro";
+import type { HomeTopic } from "../../lib/home-edition";
+
+interface Props {
+  topic: HomeTopic;
+}
+
+const { topic } = Astro.props;
+const headingId = `home-topic-${topic.slug}`;
+---
+
+<section class="home-section shell-wrap" aria-labelledby={headingId}>
+  <EditionHeading title={topic.title} labelledby={headingId} href={topic.href} />
+  <StoryGrid stories={topic.stories} />
+</section>

@@ -1,0 +1,33 @@
+{
+  "name": "golden-visa-research",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "test:content": "node scripts/validate-content-model.ts",
+    "test:seo": "node scripts/validate-seo.ts"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "8.0.3",
+    "@astrojs/rss": "4.0.19",
+    "@astrojs/sitemap": "3.7.4",
+    "@fontsource-variable/inter": "5.3.0",
+    "@fontsource-variable/source-serif-4": "5.3.1",
+    "@tailwindcss/vite": "4.3.3",
+    "astro": "7.3.8",
+    "tailwindcss": "4.3.3",
+    "yaml": "2.9.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "pagefind": "^1.4.0",
+    "typescript": "5.9.3"
+  }
+}

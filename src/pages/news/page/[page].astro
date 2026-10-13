@@ -1,0 +1,13 @@
+---
+import NewsArchive from "../../../components/archive/NewsArchive.astro";
+import { newsPagePaths } from "../../../lib/load-archive";
+
+export async function getStaticPaths() {
+  return newsPagePaths();
+}
+
+const page = Number(Astro.params.page);
+if (!Number.isInteger(page) || page < 2) throw new Error("Missing news page");
+---
+
+<NewsArchive page={page} />
