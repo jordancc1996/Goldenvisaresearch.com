@@ -12,7 +12,8 @@
     "preview": "astro preview",
     "check": "astro check",
     "test:content": "node scripts/validate-content-model.ts",
-    "test:seo": "node scripts/validate-seo.ts"
+    "test:seo": "node scripts/validate-seo.ts",
+    "test:preview": "node scripts/validate-design-preview.ts"
   },
   "dependencies": {
     "@astrojs/mdx": "8.0.3",

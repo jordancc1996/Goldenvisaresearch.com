@@ -1,5 +1,5 @@
 ---
-title: Design Preview of a Fifth Section Story
+title: Design preview of another text column story with a longer headline
 description: Design preview copy for the homepage layout. It does not report a government action.
 publishedAt: 2026-10-22
 draft: true

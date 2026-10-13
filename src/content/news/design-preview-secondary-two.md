@@ -1,5 +1,5 @@
 ---
-title: Design Preview of Another Secondary Headline
+title: Design preview headline that wraps onto a second line in the rail
 description: Design preview copy for the homepage layout. It does not report a government action.
 publishedAt: 2026-10-29
 draft: true

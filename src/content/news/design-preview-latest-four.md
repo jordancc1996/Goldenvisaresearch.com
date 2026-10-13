@@ -1,5 +1,5 @@
 ---
-title: Design Preview of a Fourth Section Story
+title: Design preview text story
 description: Design preview copy for the homepage layout. It does not report a government action.
 publishedAt: 2026-10-23
 draft: true

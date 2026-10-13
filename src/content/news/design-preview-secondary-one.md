@@ -1,5 +1,5 @@
 ---
-title: Design Preview of a Secondary Headline
+title: Short design preview headline
 description: Design preview copy for the homepage layout. It does not report a government action.
 publishedAt: 2026-10-30
 draft: true

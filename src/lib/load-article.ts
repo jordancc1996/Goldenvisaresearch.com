@@ -9,10 +9,10 @@ import {
   reviewNote,
   verifiedLabel,
 } from "./article-display";
+import { showsDemonstrationContent } from "./preview-mode";
 import {
   entryHref,
   formatTextFact,
-  isProduction,
   isPublicEntry,
   readingTime,
   referenceId,
@@ -262,7 +262,7 @@ async function coverageFor(current: {
     getCollection("reports"),
     getCollection("press"),
   ]);
-  const preview = !isProduction();
+  const preview = showsDemonstrationContent();
   const heroes = new Map<string, ArticleHero>();
   const items: CoverageItem[] = [];
   const prepare = async (
@@ -540,7 +540,7 @@ async function loadPress(id: string): Promise<ArticleModel> {
   const rendered = await render(entry);
   const data = entry.data;
   const [news, reports] = await Promise.all([getCollection("news"), getCollection("reports")]);
-  const production = isProduction();
+  const production = !showsDemonstrationContent();
   const supporting = [
     ...supportingLinks(
       (data.relatedNews ?? []).map(referenceId),

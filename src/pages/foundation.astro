@@ -7,6 +7,9 @@ import SectionMark from "../components/SectionMark.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { site } from "../data/site";
 import { routeIndexable } from "../lib/indexability";
+import { showsDemonstrationContent } from "../lib/preview-mode";
+
+const showPreviewLink = showsDemonstrationContent();
 ---
 
 <BaseLayout
@@ -23,6 +26,13 @@ import { routeIndexable } from "../lib/indexability";
           This page checks the publication type scale, the five brand colors,
           the section accent, and the article measure. It is not a homepage.
         </p>
+        {
+          showPreviewLink && (
+            <p class="type-ui note-gap">
+              <a class="text-link" href="/">Design preview</a>
+            </p>
+          )
+        }
         <Meta
           section="Foundation"
           date={new Date("2026-10-12T00:00:00Z")}

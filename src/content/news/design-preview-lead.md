@@ -1,6 +1,6 @@
 ---
-title: Design Preview of the Lead Story
-description: Design preview copy for the homepage layout. It does not report a government action.
+title: Design preview lead headline written long enough to wrap across the opening column
+description: Design preview standfirst for the opening story. It is layout copy only. It does not report a government action, a fee, or an investment amount.
 publishedAt: 2026-10-31
 draft: true
 material: demonstration

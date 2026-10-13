@@ -10,6 +10,7 @@ import RegionIndex from "../components/home/RegionIndex.astro";
 import StandardsNote from "../components/home/StandardsNote.astro";
 import TopicCoverage from "../components/home/TopicCoverage.astro";
 import { site } from "../data/site";
+import { showsDemonstrationContent } from "../lib/preview-mode";
 import { buildDirectoryRows, sortDirectory } from "../lib/directory";
 import { composeHome } from "../lib/home-edition";
 import { routeIndexable } from "../lib/indexability";
@@ -23,7 +24,8 @@ const reports = await loadHomeReports();
 const edition = composeHome(news, reports);
 const programs = await getCollection("programs");
 const countries = await getCollection("countries");
-const directory = buildDirectoryRows(programs, countries, "production");
+const preview = showsDemonstrationContent();
+const directory = buildDirectoryRows(programs, countries, preview ? "preview" : "production");
 const trackerRows = sortDirectory(directory.rows, "verified");
 const desk = news.some((story) => story.desk) || reports.some((story) => story.desk);
 ---
@@ -39,7 +41,7 @@ const desk = news.some((story) => story.desk) || reports.some((story) => story.d
     <LatestNews stories={edition.latest} />
     {edition.topics.map((topic) => <TopicCoverage topic={topic} />)}
     <HomeResearch stories={edition.research} />
-    <HomeTracker rows={trackerRows} />
+    <HomeTracker rows={trackerRows} draftLayout={preview} />
     <RegionIndex />
     <StandardsNote />
     <HomeNewsletter />

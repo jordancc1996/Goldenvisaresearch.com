@@ -3,6 +3,7 @@ import interLatin from "@fontsource-variable/inter/files/inter-latin-wght-normal
 import sourceSerifLatin from "@fontsource-variable/source-serif-4/files/source-serif-4-latin-wght-normal.woff2?url";
 import { canonicalUrl, site } from "../data/site";
 import { jsonLd, publicationGraph, robotsDirectiveFor } from "../lib/metadata";
+import { showsDemonstrationContent } from "../lib/preview-mode";
 import type { Crumb } from "../data/navigation";
 import SiteShell from "../components/shell/SiteShell.astro";
 import "../styles/global.css";
@@ -35,7 +36,10 @@ const {
   indexed = false,
 } = Astro.props;
 const canonical = canonicalUrl(Astro.url.pathname);
-const robots = robotsDirectiveFor({ dev: import.meta.env.DEV, origin: site.origin }, !noindex);
+const robots = robotsDirectiveFor(
+  { dev: import.meta.env.DEV || showsDemonstrationContent(), origin: site.origin },
+  !noindex,
+);
 const graph = siteSchema ? jsonLd(publicationGraph(site.origin)) : null;
 const published = publishedAt?.toISOString();
 const modified = updatedAt?.toISOString();

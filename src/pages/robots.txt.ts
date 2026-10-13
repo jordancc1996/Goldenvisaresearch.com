@@ -3,8 +3,14 @@ import { getCollection } from "astro:content";
 import { site } from "../data/site";
 import { visibleInProduction } from "../lib/content";
 import { withinNewsSitemapWindow } from "../lib/metadata";
+import { showsDemonstrationContent } from "../lib/preview-mode";
 
 export async function GET(_context: APIContext) {
+  if (showsDemonstrationContent() && import.meta.env.DEV !== true) {
+    return new Response("User-agent: *\nDisallow: /\n", {
+      headers: { "content-type": "text/plain; charset=utf-8" },
+    });
+  }
   const news = await getCollection("news", (entry) => visibleInProduction(entry));
   const recent = news.filter((entry) => withinNewsSitemapWindow(entry.data.publishedAt, new Date()));
   const lines = [

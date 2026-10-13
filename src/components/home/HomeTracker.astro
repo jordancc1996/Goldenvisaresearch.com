@@ -5,10 +5,13 @@ import EditionHeading from "./EditionHeading.astro";
 
 interface Props {
   rows: DirectoryRow[];
+  draftLayout?: boolean;
 }
 
-const { rows } = Astro.props;
-const recent = rows.filter((row) => row.verifiedOn).slice(0, 6);
+const { rows, draftLayout = false } = Astro.props;
+const verified = rows.filter((row) => row.verifiedOn).slice(0, 6);
+const recent = verified.length > 0 ? verified : draftLayout ? rows.slice(0, 6) : [];
+const showingDrafts = verified.length === 0 && recent.length > 0;
 ---
 
 <section class="home-section shell-wrap" aria-labelledby="home-tracker">
@@ -18,7 +21,13 @@ const recent = rows.filter((row) => row.verifiedOn).slice(0, 6);
       <p class="home-status">No verified programs are published.</p>
     ) : (
       <>
-        <p class="home-note">Recently verified program records.</p>
+        <p class="home-note">
+          {
+            showingDrafts
+              ? "Design preview rows. These records are drafts. Status and investment fields are unverified."
+              : "Recently verified program records."
+          }
+        </p>
         <div class="home-tracker">
           <div class="home-tracker-head" aria-hidden="true">
             <span>Country</span>

@@ -4,7 +4,8 @@ import AuthorProfile from "../../components/author/AuthorProfile.astro";
 import { canonicalUrl, site } from "../../data/site";
 import { documentTitle, jsonLd, personSchema } from "../../lib/metadata";
 import { categoryLabel } from "../../lib/article-display";
-import { isProduction, visibleAuthorInProduction } from "../../lib/content";
+import { showsDemonstrationContent } from "../../lib/preview-mode";
+import { visibleAuthorInProduction } from "../../lib/content";
 import { resolveContentImage } from "../../lib/load-article";
 import { articlesByAuthor, reviewsByAuthor } from "../../lib/topic-assign";
 import BaseLayout from "../../layouts/BaseLayout.astro";
@@ -14,7 +15,7 @@ import "../../styles/archive.css";
 export async function getStaticPaths() {
   const authors = await getCollection("authors");
   return authors
-    .filter((author) => (isProduction() ? visibleAuthorInProduction(author) : true))
+    .filter((author) => (showsDemonstrationContent() ? true : visibleAuthorInProduction(author)))
     .map((author) => ({ params: { slug: author.id } }));
 }
 

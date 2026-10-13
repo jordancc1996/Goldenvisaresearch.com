@@ -1,5 +1,5 @@
 ---
-title: Design Preview of a Second Section Story
+title: Design preview latest story with a headline long enough to wrap in a narrow column
 description: Design preview copy for the homepage layout. It does not report a government action.
 publishedAt: 2026-10-25
 draft: true

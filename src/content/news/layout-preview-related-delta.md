@@ -14,6 +14,12 @@ programTypes:
   - real-estate
 verification:
   status: unverified
+hero:
+  src: "../../assets/demonstration-figure.webp"
+  alt: "Abstract geometric figure of ink lines on a mist field. It does not show a person, a document, or a government office."
+  caption: "Design preview figure. It is not a photograph of a place or a person."
+  credit: "No photographer. Layout figure only."
+  focal: "50% 40%"
 ---
 
 This file is a design preview. It gives the related-coverage column a third story. It does not report a government action.

@@ -11,7 +11,8 @@ import {
   type NewsArchiveSlug,
   type ResearchArchiveSlug,
 } from "./archive";
-import { isProduction, referenceId, sortByDate } from "./content";
+import { referenceId, sortByDate } from "./content";
+import { showsDemonstrationContent } from "./preview-mode";
 import { researchTypeLabels, type ResearchType } from "./content-schema";
 
 async function countryNames() {
@@ -39,7 +40,7 @@ function linkedCountries(
 }
 
 function listedEntries<T extends Parameters<typeof isArchiveEntry>[0]>(entries: T[]): T[] {
-  if (isProduction()) return entries.filter((entry) => isArchiveEntry(entry));
+  if (!showsDemonstrationContent()) return entries.filter((entry) => isArchiveEntry(entry));
   return entries.filter((entry) => entry.data.comparison !== true);
 }
 

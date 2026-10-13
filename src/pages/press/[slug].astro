@@ -1,11 +1,11 @@
 ---
 import { getCollection } from "astro:content";
 import ArticleView from "../../components/article/ArticleView.astro";
-import { isProduction } from "../../lib/content";
+import { showsDemonstrationContent } from "../../lib/preview-mode";
 import { pressRouteParams } from "../../lib/press";
 
 export async function getStaticPaths() {
-  return pressRouteParams(await getCollection("press"), isProduction());
+  return pressRouteParams(await getCollection("press"), !showsDemonstrationContent());
 }
 
 const slug = Astro.params.slug;

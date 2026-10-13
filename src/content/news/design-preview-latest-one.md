@@ -1,5 +1,5 @@
 ---
-title: Design Preview of a Section Story
+title: Design preview of a compact latest story
 description: Design preview copy for the homepage layout. It does not report a government action.
 publishedAt: 2026-10-26
 draft: true

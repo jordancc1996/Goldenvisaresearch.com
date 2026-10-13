@@ -1,5 +1,5 @@
 ---
-title: Design Preview of a Third Section Story
+title: Design preview latest image story with a headline that wraps under the figure
 description: Design preview copy for the homepage layout. It does not report a government action.
 publishedAt: 2026-10-24
 draft: true

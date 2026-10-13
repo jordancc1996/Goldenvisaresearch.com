@@ -9,13 +9,13 @@ import {
 } from "./article-display.ts";
 import {
   formatInvestmentThreshold,
-  isProduction,
   referenceId,
   selectVisible,
   type ContentRecord,
   type EntryReference,
   type Visibility,
 } from "./content.ts";
+import { showsDemonstrationContent } from "./preview-mode.ts";
 import { programStatuses, regionLabels, type ProgramStatus, type ProgramType, type Region } from "./content-schema.ts";
 
 export type ProgramDirectoryData = {
@@ -96,7 +96,7 @@ export type DirectoryBuild = {
 };
 
 function visibilityDefault(): Visibility {
-  return isProduction() ? "production" : "preview";
+  return showsDemonstrationContent() ? "preview" : "production";
 }
 
 function compareNames(left: DirectoryRow, right: DirectoryRow): number {

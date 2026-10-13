@@ -1,4 +1,5 @@
 import type { AuthorData, CountryData, NewsData, ProgramType } from "./content-schema";
+import { showsDemonstrationContent } from "./preview-mode.ts";
 
 export type Visibility = "production" | "preview";
 
@@ -67,16 +68,20 @@ export function visibleInProduction(
   return true;
 }
 
+export function contentVisibility(): Visibility {
+  return showsDemonstrationContent() ? "preview" : "production";
+}
+
 export function isPublicEntry(
   entry: ContentRecord<Located & { developmentOnly?: boolean }>,
 ): boolean {
-  if (!isProduction()) return true;
+  if (showsDemonstrationContent()) return true;
   return visibleInProduction(entry);
 }
 
 export function selectVisible<T extends Located>(
   entries: ContentRecord<T>[],
-  visibility: Visibility = isProduction() ? "production" : "preview",
+  visibility: Visibility = contentVisibility(),
 ): ContentRecord<T>[] {
   if (visibility === "preview") return entries;
   return entries.filter((entry) => visibleInProduction(entry));
@@ -95,7 +100,7 @@ export function sortByDate<T extends Dated>(
 
 export function featuredStories<T extends Located & { featured?: boolean }>(
   entries: ContentRecord<T>[],
-  visibility: Visibility = isProduction() ? "production" : "preview",
+  visibility: Visibility = contentVisibility(),
 ): ContentRecord<T>[] {
   return sortByDate(
     selectVisible(entries, visibility).filter((entry) => entry.data.featured === true),
@@ -115,7 +120,7 @@ export function filterByProgramType<
 >(
   entries: ContentRecord<T & Located>[],
   programType: ProgramType,
-  visibility: Visibility = isProduction() ? "production" : "preview",
+  visibility: Visibility = contentVisibility(),
 ): ContentRecord<T & Located>[] {
   return selectVisible(entries, visibility).filter((entry) =>
     entryProgramTypes(entry).includes(programType),
@@ -125,7 +130,7 @@ export function filterByProgramType<
 export function newsForCountry<T extends Located>(
   entries: ContentRecord<T>[],
   countryId: string,
-  visibility: Visibility = isProduction() ? "production" : "preview",
+  visibility: Visibility = contentVisibility(),
 ): ContentRecord<T>[] {
   return sortByDate(
     selectVisible(entries, visibility).filter((entry) =>
@@ -139,7 +144,7 @@ export function relatedCoverage<T extends Located>(
   candidates: ContentRecord<T>[],
   options: { limit?: number; visibility?: Visibility } = {},
 ): ContentRecord<T>[] {
-  const visibility = options.visibility ?? (isProduction() ? "production" : "preview");
+  const visibility = options.visibility ?? contentVisibility();
   const limit = options.limit ?? 3;
   const countries = new Set((entry.data.countries ?? []).map(referenceId));
   const types = new Set(entryProgramTypes(entry));
