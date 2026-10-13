@@ -1,4 +1,4 @@
-import { showsDemonstrationContent } from "./preview-mode.ts";
+import { constructionMode } from "./preview-mode.ts";
 
 type ImageRecord = {
   draft?: boolean;
@@ -8,9 +8,8 @@ type ImageRecord = {
 };
 
 /**
- * Drafts, demonstration files, and incomplete verification must not add an image
- * to a normal production asset graph. Local development and a DESIGN_PREVIEW
- * build still resolve those images.
+ * A launched build omits draft and demonstration images.
+ * Construction mode, the default, still resolves the placeholder figures.
  */
 export function shouldResolveContentImage(entry: ImageRecord, production: boolean): boolean {
   if (!production) return true;
@@ -22,9 +21,7 @@ export function shouldResolveContentImage(entry: ImageRecord, production: boolea
 }
 
 export function omitPrivateContentImages(): boolean {
-  const requested = typeof process !== "undefined" && process.env.DESIGN_PREVIEW === "true";
-  const shown = showsDemonstrationContent();
-  if (requested || shown) return false;
+  if (constructionMode()) return false;
   if (typeof import.meta !== "undefined" && import.meta.env && typeof import.meta.env.PROD === "boolean") {
     return import.meta.env.PROD;
   }

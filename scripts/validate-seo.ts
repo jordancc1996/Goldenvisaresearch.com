@@ -11,6 +11,7 @@ import {
 import { extractHeadings, headingIssues, titleCase } from "../src/lib/headings.ts";
 import { brokenInternalLinks, exactAnchorCounts, internalPath, orphanPaths, trailingSlashLinks, type LinkRef } from "../src/lib/links.ts";
 import { routeIndexable } from "../src/lib/indexability.ts";
+import { constructionModeFromValue, constructionNotice } from "../src/lib/preview-mode.ts";
 import {
   allowInSitemap,
   articleSchema,
@@ -39,6 +40,20 @@ function check(name: string, fn: () => void) {
 
 function expect(condition: boolean, message: string) {
   if (!condition) throw new Error(message);
+}
+
+check("construction mode stays on until the launch switch", () => {
+  expect(constructionModeFromValue(undefined) === true, "unset");
+  expect(constructionModeFromValue("") === true, "blank");
+  expect(constructionModeFromValue("true") === true, "true");
+  expect(constructionModeFromValue("false") === false, "false");
+  expect(constructionModeFromValue("0") === false, "zero");
+  expect(constructionModeFromValue("off") === false, "off");
+});
+
+function constructionContentRoute(route: string): boolean {
+  if (/^\/(?:news|reports|programs|countries|authors|press)\/[^/]+$/.test(route)) return true;
+  return /^\/(?:news|reports)\/(?:page\/\d+|[^/]+\/page\/\d+)$/.test(route);
 }
 
 check("robots keeps staging separate from production", () => {
@@ -213,6 +228,13 @@ check("built pages match metadata, headings, links, and images", () => {
   const routes = new Set(pages.map((page) => page.route));
   const links: LinkRef[] = [];
   const privateRoutes = new Set<string>(privatePaths);
+  const home = pages.find((page) => page.route === "/");
+  const construction = home?.html.includes(constructionNotice) === true;
+  if (construction) {
+    expect(home?.html.includes("/news/design-preview-lead") === true, "homepage lead");
+    expect(home?.html.includes("<img") === true, "homepage image");
+    expect(home?.html.includes("No news is published.") === false, "homepage is populated");
+  }
   for (const page of pages) {
     const headings = extractHeadings(page.html);
     const parts = page.route.split("/").filter(Boolean);
@@ -232,25 +254,39 @@ check("built pages match metadata, headings, links, and images", () => {
       expect(page.html.includes('data-pagefind-ignore="all"'), `${page.route} is outside the search index`);
     }
     if (page.route === "/countries") expect(!page.html.includes("0 countries"), "country count");
-    if (page.route === "/news") expect(!page.html.includes("Twenty stories"), "news page size");
-    if (page.route === "/reports") expect(!page.html.includes("Twenty reports"), "research page size");
-    const issues = headingIssues(
-      headings,
-      story ? headings.filter((heading) => heading.level === 1).map((heading) => heading.text) : [],
-    );
+    if (!construction && page.route === "/news") expect(!page.html.includes("Twenty stories"), "news page size");
+    if (!construction && page.route === "/reports") expect(!page.html.includes("Twenty reports"), "research page size");
+    const preserved = story
+      ? headings.filter((heading) => heading.level === 1).map((heading) => heading.text)
+      : [];
+    if (construction) {
+      for (const heading of headings) {
+        if (
+          (page.route === "/" && heading.level === 1) ||
+          (heading.level > 1 && /^(Design [Pp]review|Demonstration|Layout [Pp]review|Placeholder)\b/.test(heading.text))
+        ) {
+          preserved.push(heading.text);
+        }
+      }
+    }
+    const issues = headingIssues(headings, preserved);
     expect(issues.length === 0, `${page.route}: ${issues.join("; ")}`);
     expect(page.html.includes('name="robots"'), `${page.route} robots`);
     expect(page.html.includes('property="og:title"'), `${page.route} open graph`);
     expect(page.html.includes('name="twitter:card" content="summary"'), `${page.route} twitter`);
     expect(!page.html.includes("BreadcrumbList"), `${page.route} breadcrumb schema`);
-    expect(!page.route.includes("layout-preview"), `${page.route} preview route`);
-    expect(!/^\/press\/.+/.test(page.route), `${page.route} unpublished press release`);
-    if (page.route === "/press") {
-      expect(page.html.includes("No press releases have been published yet."), `${page.route} empty state`);
-      expect(page.html.includes(">Press Room<"), `${page.route} heading`);
+    if (!construction) {
+      expect(!page.route.includes("layout-preview"), `${page.route} preview route`);
+      expect(!/^\/press\/.+/.test(page.route), `${page.route} unpublished press release`);
+      expect(!page.html.includes("Design preview"), `${page.route} design preview`);
+      expect(!page.html.includes("layout-preview"), `${page.route} preview slug`);
     }
-    expect(!page.html.includes("Design preview"), `${page.route} design preview`);
-    expect(!page.html.includes("layout-preview"), `${page.route} preview slug`);
+    if (page.route === "/press") {
+      expect(page.html.includes(">Press Room<"), `${page.route} heading`);
+      if (!construction) {
+        expect(page.html.includes("No press releases have been published yet."), `${page.route} empty state`);
+      }
+    }
   expect(!page.html.includes('class="breadcrumb"'), `${page.route} breadcrumb`);
     expect(!/loading="lazy"/.test(page.html), `${page.route} lazy image`);
     for (const image of page.html.matchAll(/<img\b[^>]*>/g)) {
@@ -267,7 +303,9 @@ check("built pages match metadata, headings, links, and images", () => {
       expect(!page.html.includes('rel="canonical"'), `${page.route} canonical`);
       expect(!page.html.includes("application/ld+json"), `${page.route} schema`);
     }
-    const directive = robotsDirectiveFor({ dev: false, origin: site.origin }, routeIndexable(page.route));
+    const directive = construction
+      ? "noindex, nofollow"
+      : robotsDirectiveFor({ dev: false, origin: site.origin }, routeIndexable(page.route));
     expect(page.html.includes(`content="${directive}"`), `${page.route} robots ${directive}`);
     const keyword = keywordPages.find((item) => item.path === page.route);
     if (keyword) {
@@ -278,7 +316,9 @@ check("built pages match metadata, headings, links, and images", () => {
           main.match(/<p\b[^>]*>([\s\S]*?)<\/p>/i)?.[1] ??
           "",
       );
-      expect(h1 === keyword.h1, `${page.route} h1 is "${h1}"`);
+      if (!(construction && page.route === "/")) {
+        expect(h1 === keyword.h1, `${page.route} h1 is "${h1}"`);
+      }
       expect(title === expectedTitle(keyword), `${page.route} title is "${title}"`);
       expect(description === keyword.description, `${page.route} description`);
       const hits = keywordHits(keyword, intro);
@@ -286,7 +326,7 @@ check("built pages match metadata, headings, links, and images", () => {
         const exempt = keyword.exceptions.some((item) => item.location === location);
         if (!hits[location] && !exempt) throw new Error(`${page.route} ${location}`);
       }
-    } else {
+    } else if (!(construction && constructionContentRoute(page.route))) {
       expect(privateRoutes.has(page.route), `${page.route} has no keyword assignment`);
     }
     for (const match of page.html.matchAll(/<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/g)) {
@@ -309,8 +349,12 @@ check("built pages match metadata, headings, links, and images", () => {
   expect(searchStatus.documents === 0, "search index stays empty without published pages");
   expect(!statExists(path.join(dist, "pagefind", "pagefind.js")), "empty index does not ship the search bundle");
   const robots = readFileSync(path.join(dist, "robots.txt"), "utf8");
-  expect(robots.includes("Disallow: /thanks") && robots.includes("Disallow: /foundation"), "robots private");
-  expect(!site.origin ? !robots.includes("Sitemap:") : robots.includes("sitemap-index.xml"), "robots sitemap");
+  if (construction) {
+    expect(robots.includes("Disallow: /") && !robots.includes("Sitemap:"), "construction robots");
+  } else {
+    expect(robots.includes("Disallow: /thanks") && robots.includes("Disallow: /foundation"), "robots private");
+    expect(!site.origin ? !robots.includes("Sitemap:") : robots.includes("sitemap-index.xml"), "robots sitemap");
+  }
   if (!site.origin) {
     expect(!statExists(path.join(dist, "rss.xml")), "rss withheld");
     expect(!statExists(path.join(dist, "news-sitemap.xml")), "news sitemap withheld");
@@ -326,10 +370,21 @@ check("built pages match metadata, headings, links, and images", () => {
   const asset = path.join(root, "src", "assets", "demonstration-figure.webp");
   expect(statSync(asset).isFile(), "demonstration image retained");
   const leaked = filesUnder(dist).filter((file) => path.basename(file).includes("demonstration-figure"));
-  expect(leaked.length === 0, `draft image in dist: ${leaked.join(", ")}`);
-  for (const file of filesUnder(dist)) {
-    if (!/\.(html|js|mjs|css|txt|json)$/.test(file)) continue;
-    expect(!readFileSync(file, "utf8").includes("demonstration-figure"), `${file} names the draft image`);
+  if (construction) {
+    expect(leaked.length > 0, "placeholder figure is in the build");
+  } else {
+    expect(leaked.length === 0, `draft image in dist: ${leaked.join(", ")}`);
+    for (const file of filesUnder(dist)) {
+      if (!/\.(html|js|mjs|css|txt|json)$/.test(file)) continue;
+      expect(!readFileSync(file, "utf8").includes("demonstration-figure"), `${file} names the draft image`);
+    }
+  }
+  for (const name of ["llms.txt", "content-index.json", "rss.xml", "news-sitemap.xml", "sitemap-index.xml"]) {
+    const file = path.join(dist, name);
+    if (!statExists(file)) continue;
+    const text = readFileSync(file, "utf8");
+    expect(!text.includes("design-preview") && !text.includes("layout-preview"), `${name} excludes placeholders`);
+    expect(!text.includes("demonstration-figure"), `${name} excludes the placeholder figure`);
   }
   const llms = readFileSync(path.join(dist, "llms.txt"), "utf8");
   const index = JSON.parse(readFileSync(path.join(dist, "content-index.json"), "utf8")) as {

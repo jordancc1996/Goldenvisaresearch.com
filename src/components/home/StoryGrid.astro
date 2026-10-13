@@ -6,9 +6,11 @@ import { storyColumns, type GridStory } from "../../lib/story-grid";
 
 interface Props {
   stories: GridStory[];
+  level?: 2 | 3;
 }
 
-const { stories } = Astro.props;
+const { stories, level = 3 } = Astro.props;
+const Title = level === 2 ? "h2" : "h3";
 const columns = storyColumns(stories);
 ---
 
@@ -36,9 +38,9 @@ const columns = storyColumns(stories);
                 </figure>
               )}
               <p class="type-kicker story-kicker">{story.categoryLabel}</p>
-              <h3 class:list={["story-grid-title", { "story-grid-title-lead": image }]}>
+              <Title class:list={["story-grid-title", { "story-grid-title-lead": image }]}>
                 <a href={story.href}>{story.title}</a>
-              </h3>
+              </Title>
               {image && story.summary && <p class="story-grid-summary">{story.summary}</p>}
               <StoryMeta publishedAt={story.publishedAt} plain />
             </article>

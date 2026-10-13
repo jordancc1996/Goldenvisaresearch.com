@@ -14,6 +14,7 @@ import ShareBar from "../components/article/ShareBar.astro";
 import Sources from "../components/article/Sources.astro";
 import SupportingLinks from "../components/article/SupportingLinks.astro";
 import { editorialDisclaimer } from "../lib/article-display";
+import { placeholderNotice } from "../lib/preview-mode";
 import { correctionsForPath } from "../lib/corrections";
 import { canonicalUrl, site } from "../data/site";
 import { articleSchema, documentTitle, jsonLd } from "../lib/metadata";
@@ -78,7 +79,7 @@ const below = [
       {
         model.demonstration && (
           <p class="design-notice">
-            {model.designNotice ?? "Design preview: demonstration content, not published reporting."}
+            {model.designNotice ?? placeholderNotice}
           </p>
         )
       }
@@ -110,9 +111,9 @@ const below = [
             ) : (
               model.demonstration && (
                 <DesignPlaceholder
-                  alt="Design preview. No photograph."
+                  alt="Placeholder. No photograph."
                   caption="Layout example. This frame is not a photograph."
-                  credit="Design preview."
+                  credit="Placeholder."
                   priority
                 />
               )

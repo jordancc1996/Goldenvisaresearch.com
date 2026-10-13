@@ -71,13 +71,10 @@ function pagefindIndex(): AstroIntegration {
 }
 
 const origin = site.origin;
-const designPreview = process.env.DESIGN_PREVIEW === "true";
-
-if (designPreview && process.env.VERCEL_ENV === "production") {
-  throw new Error(
-    "DESIGN_PREVIEW=true is refused when VERCEL_ENV is production. Remove DESIGN_PREVIEW from the Vercel Production environment.",
-  );
-}
+const constructionOff = ["false", "0", "off"].includes(
+  (process.env.CONSTRUCTION_MODE ?? "").trim().toLowerCase(),
+);
+const constructionMode = !constructionOff;
 
 export default defineConfig({
   ...(origin ? { site: origin } : {}),
@@ -96,7 +93,7 @@ export default defineConfig({
     publicationAudit(),
     withholdFeedUntilOrigin(origin),
     pagefindIndex(),
-    ...(origin && !designPreview
+    ...(origin && !constructionMode
       ? [
           sitemap({
             filter: allowInSitemap,
@@ -107,8 +104,8 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
     define: {
-      "globalThis.__DESIGN_PREVIEW__": JSON.stringify(designPreview),
-      "process.env.DESIGN_PREVIEW": JSON.stringify(designPreview ? "true" : ""),
+      "globalThis.__CONSTRUCTION_MODE__": JSON.stringify(constructionMode),
+      "process.env.CONSTRUCTION_MODE": JSON.stringify(constructionMode ? "true" : "false"),
     },
   },
 });

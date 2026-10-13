@@ -126,7 +126,7 @@ export function headingIssues(headings: Heading[], storyHeadlines: string[] = []
     if (heading.level === 1) {
       const failure = titleCaseFailure(heading.text, allowed);
       if (failure) issues.push(`H1 "${heading.text}": ${failure}`);
-    } else {
+    } else if (!allowed.has(heading.text)) {
       const failure = sentenceCaseFailure(heading.text);
       if (failure) issues.push(`H${heading.level} "${heading.text}": ${failure}`);
     }

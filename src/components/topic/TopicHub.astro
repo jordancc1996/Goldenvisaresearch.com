@@ -2,7 +2,6 @@
 import EmptyState from "../archive/EmptyState.astro";
 import StoryGrid from "../home/StoryGrid.astro";
 import StoryRow from "../archive/StoryRow.astro";
-import DesignNotice from "../home/DesignNotice.astro";
 import TopicLinks from "./TopicLinks.astro";
 import { isoDate } from "../../lib/article-display";
 import type { TopicPage } from "../../data/topics";
@@ -21,11 +20,9 @@ const newsFeature = news.slice(0, Math.min(6, news.length));
 const newsRows = news.slice(newsFeature.length);
 const reportFeature = reports.slice(0, Math.min(6, reports.length));
 const reportRows = reports.slice(reportFeature.length);
-const desk = news.some((story) => story.desk) || reports.some((story) => story.desk);
 ---
 
 <div class="archive-page edition-archive shell-wrap topic-hub">
-  <DesignNotice show={desk} />
   <header class="article-header">
     <p class="type-kicker article-kicker">Topic</p>
     <h1 class="article-title">{page.title}</h1>

@@ -1,6 +1,5 @@
 ---
 import { getCollection } from "astro:content";
-import DesignNotice from "../components/home/DesignNotice.astro";
 import HomeNewsletter from "../components/home/HomeNewsletter.astro";
 import HomeResearch from "../components/home/HomeResearch.astro";
 import HomeTracker from "../components/home/HomeTracker.astro";
@@ -27,16 +26,10 @@ const countries = await getCollection("countries");
 const preview = showsDemonstrationContent();
 const directory = buildDirectoryRows(programs, countries, preview ? "preview" : "production");
 const trackerRows = sortDirectory(directory.rows, "verified");
-const desk = news.some((story) => story.desk) || reports.some((story) => story.desk);
 ---
 
 <BaseLayout title={site.name} description={site.description} siteSchema={true} noindex={!routeIndexable("/")}>
   <div class="home">
-    {desk && (
-      <div class="shell-wrap home-preview-note">
-        <DesignNotice show />
-      </div>
-    )}
     <Opening lead={edition.lead} secondary={edition.secondary} />
     <LatestNews stories={edition.latest} />
     {edition.topics.map((topic) => <TopicCoverage topic={topic} />)}

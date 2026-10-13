@@ -13,12 +13,12 @@ const { alt, caption, credit, priority = false, compact = false } = Astro.props;
 {
   compact ? (
     <div class="design-placeholder design-placeholder-compact" role="img" aria-label={alt}>
-      <span>Design preview</span>
+      <span>Placeholder</span>
     </div>
   ) : (
     <figure class:list={["article-figure", { "article-figure-hero": priority, "article-figure-inline": !priority }]}>
       <div class="article-figure-frame design-placeholder" role="img" aria-label={alt}>
-        <span>Design preview. No photograph.</span>
+        <span>Placeholder. No photograph.</span>
       </div>
       {
         caption && credit && (

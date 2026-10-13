@@ -646,7 +646,10 @@ check("publishing helpers stay empty and reject missing references", () => {
   expect(searchRecords([]).length === 0, "empty search");
   expect(feedRecords([]).length === 0, "empty feed");
   expect(publishedProgramsForCountry([], [], "reported-country").rows.length === 0, "empty program facts");
-  expect(publishedHref("countries", draft) === undefined, "draft country is not a destination");
+  expect(publishedHref("countries", draft) === "/countries/draft-country", "construction mode links a placeholder country");
+  process.env.CONSTRUCTION_MODE = "false";
+  expect(publishedHref("countries", draft) === undefined, "launch switch hides a draft country");
+  delete process.env.CONSTRUCTION_MODE;
   expect(publishedHref("countries", country) === "/countries/reported-country", "published country destination");
   const facts = countryFacts(country);
   expect(facts.name === "Reported land" && facts.regionLabel === "Europe", "country facts");

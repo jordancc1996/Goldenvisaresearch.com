@@ -1,7 +1,6 @@
 ---
 import ArchiveFilters from "./ArchiveFilters.astro";
 import TopicLinks from "../topic/TopicLinks.astro";
-import DesignNotice from "../home/DesignNotice.astro";
 import EmptyState from "./EmptyState.astro";
 import Pagination from "./Pagination.astro";
 import ReportCard from "./ReportCard.astro";
@@ -44,7 +43,6 @@ const pool = page === 1 ? [featured, ...result.items].filter((item) => item !== 
 const feature = pool.slice(0, Math.min(6, pool.length));
 const featureIds = new Set(feature.map((item) => item.id));
 const rows = result.items.filter((item) => !featureIds.has(item.id));
-const desk = filtered.some((story) => story.desk);
 const filters = [
   { label: "All research", href: "/reports", current: !type },
   ...researchArchiveTypes.map((item) => ({
@@ -57,7 +55,6 @@ const filters = [
 
 <BaseLayout title={title} description={description} prev={links.prev} next={links.next} noindex={!routeIndexable(base)}>
   <div class="archive-page edition-archive shell-wrap">
-    <DesignNotice show={desk} />
     <header class="article-header">
       {meta && <p class="type-kicker article-kicker">Research</p>}
       <h1 class="article-title">{heading}</h1>
@@ -72,7 +69,7 @@ const filters = [
         <EmptyState message={empty} />
       ) : (
         <>
-          {feature.length > 0 && <StoryGrid stories={feature} />}
+          {feature.length > 0 && <StoryGrid stories={feature} level={2} />}
           {rows.length > 0 && (
             <section class="archive-follow" aria-labelledby={feature.length > 0 ? "earlier-research" : undefined}>
               {feature.length > 0 && <h2 id="earlier-research">Earlier reports</h2>}

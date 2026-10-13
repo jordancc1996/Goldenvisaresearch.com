@@ -1,7 +1,6 @@
 ---
 import ArchiveFilters from "./ArchiveFilters.astro";
 import TopicLinks from "../topic/TopicLinks.astro";
-import DesignNotice from "../home/DesignNotice.astro";
 import EmptyState from "./EmptyState.astro";
 import Pagination from "./Pagination.astro";
 import StoryGrid from "../home/StoryGrid.astro";
@@ -40,7 +39,6 @@ const links = paginationLinks(base, result.page, result.pages);
 const empty = meta ? `No ${meta.label.toLowerCase()} articles are published.` : "No news is published.";
 const feature = page === 1 ? result.items.slice(0, Math.min(6, result.items.length)) : [];
 const rows = page === 1 ? result.items.slice(feature.length) : result.items;
-const desk = stories.some((story) => story.desk);
 const filters = [
   { label: "All news", href: "/news", current: !category },
   ...newsArchiveCategories.map((item) => ({
@@ -53,7 +51,6 @@ const filters = [
 
 <BaseLayout title={title} description={description} prev={links.prev} next={links.next} noindex={!routeIndexable(base)}>
   <div class="archive-page edition-archive shell-wrap">
-    <DesignNotice show={desk} />
     <header class="article-header">
       {meta && <p class="type-kicker article-kicker">News</p>}
       <h1 class="article-title">{heading}</h1>
@@ -68,7 +65,7 @@ const filters = [
         <EmptyState message={empty} />
       ) : (
         <>
-          {feature.length > 0 && <StoryGrid stories={feature} />}
+          {feature.length > 0 && <StoryGrid stories={feature} level={2} />}
           {rows.length > 0 && (
             <section class="archive-follow" aria-labelledby={feature.length > 0 ? "earlier-news" : undefined}>
               {feature.length > 0 && <h2 id="earlier-news">Earlier coverage</h2>}

@@ -8,6 +8,7 @@ import {
 } from "../../data/navigation";
 import SiteFooter from "./SiteFooter.astro";
 import Wordmark from "./Wordmark.astro";
+import { constructionMode, constructionNotice } from "../../lib/preview-mode";
 import "../../styles/shell.css";
 
 interface Props {
@@ -139,6 +140,15 @@ const moreCurrent = moreNav.some((item) => navIsCurrent(path, item.href));
   </div>
 </div>
 <main id="main">
+  {
+    constructionMode() && (
+      <div class="shell-wrap construction-note">
+        <div class="construction-notice" role="note">
+          {constructionNotice}
+        </div>
+      </div>
+    )
+  }
   <slot />
 </main>
 <SiteFooter />

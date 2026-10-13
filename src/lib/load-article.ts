@@ -588,7 +588,7 @@ async function loadPress(id: string): Promise<ArticleModel> {
     indexable: searchEligible(entry),
     showSources: true,
     supporting,
-    designNotice: data.material === "demonstration" ? "Design preview — demonstration content, not a published press release." : undefined,
+    designNotice: data.material === "demonstration" ? "Placeholder. This release is not a published announcement." : undefined,
     release: {
       dateline: data.dateline,
       organization: data.organization,

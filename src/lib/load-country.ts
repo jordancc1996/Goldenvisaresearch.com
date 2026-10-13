@@ -5,13 +5,14 @@ import {
   verifiedLabel,
 } from "./article-display";
 import {
+  contentVisibility,
   newsForCountry,
   referenceId,
   sortByDate,
   visibleInProduction,
 } from "./content";
-import type { DirectoryRow } from "./directory";
-import { countryFacts, publishedProgramsForCountry, searchEligible } from "./publishing";
+import { buildDirectoryRows, programsForCountry, type DirectoryRow } from "./directory";
+import { countryFacts, searchEligible } from "./publishing";
 import { readHero, type ArticleHero, type ArticleSource, type ArticleTopic, type RelatedCard, type TocHeading } from "./load-article";
 import { topicLabels, type TopicSlug } from "./content-schema";
 
@@ -67,7 +68,9 @@ export async function loadCountryProfile(id: string): Promise<CountryProfile> {
     getCollection("reports"),
   ]);
   const facts = countryFacts(entry);
-  const publishedPrograms = publishedProgramsForCountry(programs, countries, entry.id);
+  const visibility = contentVisibility();
+  const directory = buildDirectoryRows(programs, countries, visibility);
+  const programRows = programsForCountry(directory.rows, entry.id);
   const verification = entry.data.verification;
   const verifiedOn =
     verification.status === "verified" && verification.verifiedOn
@@ -76,7 +79,8 @@ export async function loadCountryProfile(id: string): Promise<CountryProfile> {
   const linked = new Set(entry.data.relatedReports.map((report) => referenceId(report)));
   const researchEntries = sortByDate(
     reports.filter((report) => {
-      if (!visibleInProduction(report) || report.data.comparison === true) return false;
+      if (report.data.comparison === true) return false;
+      if (visibility === "production" && !visibleInProduction(report)) return false;
       const sharesCountry = report.data.countries.some((country) => referenceId(country) === entry.id);
       return sharesCountry || linked.has(report.id);
     }),
@@ -111,14 +115,14 @@ export async function loadCountryProfile(id: string): Promise<CountryProfile> {
       { depth: 2, slug: "methodology", text: "Methodology" },
       { depth: 2, slug: "corrections", text: "Corrections" },
     ]),
-    programs: publishedPrograms.rows,
+    programs: programRows,
     sources: entry.data.sources.map((source) => ({
       label: source.label,
       url: source.url,
       organization: source.organization,
       accessedOn: source.accessedOn,
     })),
-    news: newsForCountry(news, entry.id, "production")
+    news: newsForCountry(news, entry.id, visibility)
       .filter((item) => item.data.comparison !== true)
       .map((item) => ({
         href: `/news/${item.id}`,

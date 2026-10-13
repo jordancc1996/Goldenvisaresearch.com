@@ -1,4 +1,6 @@
 ---
+import { constructionNotice } from "../../lib/preview-mode";
+
 interface Props {
   show: boolean;
 }
@@ -8,6 +10,6 @@ const { show } = Astro.props;
 
 {
   show && (
-    <p class="design-notice">Design preview — demonstration content, not published reporting.</p>
+    <p class="design-notice">{constructionNotice}</p>
   )
 }

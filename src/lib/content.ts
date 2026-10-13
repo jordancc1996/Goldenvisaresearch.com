@@ -75,7 +75,7 @@ export function contentVisibility(): Visibility {
 export function isPublicEntry(
   entry: ContentRecord<Located & { developmentOnly?: boolean }>,
 ): boolean {
-  if (showsDemonstrationContent()) return true;
+  if (showsDemonstrationContent()) return entry.data.comparison !== true;
   return visibleInProduction(entry);
 }
 

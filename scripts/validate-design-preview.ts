@@ -1,8 +1,9 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
+import { constructionNotice } from "../src/lib/preview-mode.ts";
 
 const root = process.cwd();
-const dist = path.join(root, "dist-preview");
+const dist = path.join(root, "dist");
 let failed = 0;
 
 function expect(condition: boolean, message: string) {
@@ -25,32 +26,45 @@ function walk(directory: string): string[] {
   return found;
 }
 
-expect(existsSync(dist) && statSync(dist).isDirectory(), "dist-preview exists");
-const indexPath = path.join(dist, "index.html");
-const index = existsSync(indexPath) ? readFileSync(indexPath, "utf8") : "";
-expect(index.includes("Design preview — demonstration content, not published reporting."), "homepage notice");
+function read(file: string): string {
+  return existsSync(file) ? readFileSync(file, "utf8") : "";
+}
+
+expect(existsSync(dist) && statSync(dist).isDirectory(), "dist exists");
+const index = read(path.join(dist, "index.html"));
+expect(index.includes(constructionNotice), "homepage construction notice");
 expect(index.includes("/news/design-preview-lead"), "lead story link");
 expect(index.includes("<img"), "homepage image");
 expect(index.includes("wordmark-name") && index.includes("edition-nav"), "shared masthead and navigation");
 expect(index.includes('content="noindex, nofollow"'), "homepage noindex");
 expect(!index.includes("No news is published."), "homepage is populated");
+expect(index.includes("Placeholder rows."), "tracker labels draft rows");
 
-const articlePath = path.join(dist, "news", "design-preview-lead.html");
-const article = existsSync(articlePath) ? readFileSync(articlePath, "utf8") : "";
+const news = read(path.join(dist, "news.html"));
+expect(news.includes(constructionNotice), "news archive notice");
+expect(news.includes("/news/design-preview-lead"), "news archive lists a placeholder");
+expect(!news.includes("No news is published."), "news archive is populated");
+
+const reports = read(path.join(dist, "reports.html"));
+expect(reports.includes(constructionNotice), "research archive notice");
+expect(reports.includes("/reports/"), "research archive lists a report");
+
+const article = read(path.join(dist, "news", "design-preview-lead.html"));
 expect(article.includes("<img"), "article hero");
 expect(article.includes('content="noindex, nofollow"'), "article noindex");
 expect(article.includes("editorial-main"), "shared article layout");
+expect(article.includes("Placeholder. This page is not published reporting."), "article placeholder label");
 
 const files = walk(dist);
 const html = files.filter((file) => file.endsWith(".html"));
-expect(html.length > 28, "preview build adds demonstration pages");
+expect(html.length > 28, "construction build adds placeholder pages");
 expect(
   html.every((file) => readFileSync(file, "utf8").includes('content="noindex, nofollow"')),
-  "every preview page is noindex",
+  "every page is noindex",
 );
 
-const robots = existsSync(path.join(dist, "robots.txt")) ? readFileSync(path.join(dist, "robots.txt"), "utf8") : "";
-expect(robots.includes("Disallow: /") && !robots.includes("Sitemap:"), "robots blocks the preview");
+const robots = read(path.join(dist, "robots.txt"));
+expect(robots.includes("Disallow: /") && !robots.includes("Sitemap:"), "robots blocks the construction site");
 
 for (const name of ["llms.txt", "content-index.json", "rss.xml", "news-sitemap.xml", "sitemap-index.xml"]) {
   const file = path.join(dist, name);
@@ -58,17 +72,17 @@ for (const name of ["llms.txt", "content-index.json", "rss.xml", "news-sitemap.x
   const text = readFileSync(file, "utf8");
   expect(
     !text.includes("design-preview") && !text.includes("layout-preview") && !text.includes("demonstration-figure"),
-    `${name} excludes demonstration records`,
+    `${name} excludes placeholder records`,
   );
 }
 
 expect(
   files.some((file) => path.basename(file).includes("demonstration-figure")),
-  "preview build includes the demonstration figure",
+  "build includes the placeholder figure",
 );
 
 if (failed > 0) {
-  console.error(`${failed} design preview checks failed`);
+  console.error(`${failed} construction checks failed`);
   process.exit(1);
 }
-console.log("design preview checks passed");
+console.log("construction checks passed");

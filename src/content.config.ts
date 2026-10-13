@@ -38,6 +38,7 @@ function heroField(image: () => z.ZodType) {
     .optional();
 }
 
+// Construction mode keeps placeholder heroes. CONSTRUCTION_MODE=false strips them.
 function gateUnpublishedImages(schema: z.ZodType) {
   return schema.transform((data) => {
     const record = data as {

@@ -4,6 +4,7 @@
  * Unknown, unverified, and unpublished values stay labeled. They are not replaced with zero or a guessed total.
  */
 import { isArchiveEntry } from "./archive.ts";
+import { showsDemonstrationContent } from "./preview-mode.ts";
 import {
   entryHref,
   formatCurrencyFact,
@@ -56,7 +57,8 @@ export function publishedHref<T extends Publishable>(
   collection: string,
   entry: ContentRecord<T> | undefined,
 ): string | undefined {
-  if (!entry || !visibleInProduction(entry) || entry.data.comparison === true) return undefined;
+  if (!entry || entry.data.comparison === true) return undefined;
+  if (!visibleInProduction(entry) && !showsDemonstrationContent()) return undefined;
   return entryHref(collection, entry.id);
 }
 
@@ -68,7 +70,7 @@ export function publishedAuthorHref(
     verification?: { status?: string };
   }>,
 ): string | undefined {
-  if (!visibleAuthorInProduction(entry)) return undefined;
+  if (!visibleAuthorInProduction(entry) && !showsDemonstrationContent()) return undefined;
   return `/authors/${entry.id}`;
 }
 
