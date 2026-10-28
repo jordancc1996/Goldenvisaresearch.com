@@ -50,9 +50,11 @@ function gateUnpublishedImages(schema: z.ZodType) {
       hero?: unknown;
       photo?: unknown;
       heroImage?: unknown;
+      video?: { thumbnail?: unknown };
     };
     if (shouldResolveContentImage(record, omitPrivateContentImages())) return data;
-    return { ...record, hero: undefined, photo: undefined, heroImage: undefined };
+    const video = record.video ? { ...record.video, thumbnail: undefined } : undefined;
+    return { ...record, hero: undefined, photo: undefined, heroImage: undefined, video };
   });
 }
 
@@ -123,7 +125,7 @@ const corrections = defineCollection({
 const audits = defineCollection({
   loader: loader("audits"),
   schema: ({ image }) => {
-    const parsed = createAuditSchema(image().optional());
+    const parsed = createAuditSchema(image().optional(), image().optional());
     return gateUnpublishedImages(parsed) as unknown as typeof parsed;
   },
 });

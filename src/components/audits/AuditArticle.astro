@@ -5,10 +5,14 @@ import Figure from "../article/Figure.astro";
 import Sources from "../article/Sources.astro";
 import AuditPhases from "./AuditPhases.astro";
 import AuditSections from "./AuditSections.astro";
+import AuditTranscript from "./AuditTranscript.astro";
+import AuditVideo from "./AuditVideo.astro";
 import { formatArticleDate, isoDate } from "../../lib/article-display";
 import { canonicalUrl, site } from "../../data/site";
+import { constructionMode } from "../../lib/preview-mode";
+import { embedUrl } from "../../lib/audit-video";
 import { auditDocumentTitle, storyRows, type AuditCard } from "../../lib/load-audits";
-import { auditArticleSchema, jsonLd } from "../../lib/metadata";
+import { auditArticleSchema, auditVideoObject, jsonLd } from "../../lib/metadata";
 import { placeholderPageNote } from "../../lib/placeholder-marks";
 import { placeholderNotice } from "../../lib/preview-mode";
 import type { TocHeading } from "../../lib/load-article";
@@ -38,7 +42,25 @@ const schema =
         origin: site.origin,
       })
     : null;
+const videoSchema =
+  audit.video && audit.indexable && canonical && site.origin && audit.video.uploadDate && audit.video.duration
+    ? auditVideoObject({
+        origin: site.origin,
+        name: audit.video.title,
+        description: audit.video.description,
+        thumbnailUrl: new URL(audit.video.thumbnail.src, site.origin).href,
+        uploadDate: audit.video.uploadDate,
+        duration: audit.video.duration,
+        embedUrl: embedUrl(audit.video.provider, audit.video.id),
+        chapters: audit.video.chapters.map((chapter) => ({
+          name: chapter.label,
+          startOffset: chapter.seconds,
+          url: embedUrl(audit.video!.provider, audit.video!.id, chapter.seconds),
+        })),
+      })
+    : null;
 const schemaJson = jsonLd(schema);
+const videoSchemaJson = jsonLd(videoSchema);
 const rows = storyRows(related);
 ---
 
@@ -52,6 +74,7 @@ const rows = storyRows(related);
   indexed={audit.indexable}
 >
   {schemaJson && <script is:inline type="application/ld+json" set:html={schemaJson} />}
+  {videoSchemaJson && <script is:inline type="application/ld+json" set:html={videoSchemaJson} />}
   <article class="editorial shell-wrap">
     <div class="editorial-frame">
       {
@@ -83,16 +106,20 @@ const rows = storyRows(related);
         <div class="editorial-main" data-pagefind-body={audit.indexable ? true : undefined}>
           <hr class="editorial-rule" />
           {
-            audit.hero && (
-              <Figure
-                src={audit.hero.src}
-                alt={audit.hero.alt}
-                caption={audit.hero.caption}
-                credit={audit.hero.credit}
-                focal={audit.hero.focal}
-                sizes="(min-width: 768px) 680px, calc(100vw - 48px)"
-                priority
-              />
+            audit.video ? (
+              <AuditVideo video={audit.video} allowEmbed={!constructionMode()} />
+            ) : (
+              audit.hero && (
+                <Figure
+                  src={audit.hero.src}
+                  alt={audit.hero.alt}
+                  caption={audit.hero.caption}
+                  credit={audit.hero.credit}
+                  focal={audit.hero.focal}
+                  sizes="(min-width: 768px) 680px, calc(100vw - 48px)"
+                  priority
+                />
+              )
             )
           }
           <div class="audit-verdict">
@@ -104,6 +131,7 @@ const rows = storyRows(related);
             <slot />
           </div>
           <AuditPhases />
+          {audit.video && audit.video.transcript.length > 0 && <AuditTranscript lines={audit.video.transcript} />}
           <Sources sources={audit.sources} />
           <p class="article-notice">
             This audit is independent research, not legal, tax or financial advice. Facts were verified on the date shown and may change.

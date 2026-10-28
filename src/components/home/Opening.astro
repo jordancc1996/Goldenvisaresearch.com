@@ -19,15 +19,19 @@ const LeadTitle = titleLevel === 2 ? "h2" : "h1";
       {
         lead ? (
           <article>
-            <p class="type-kicker">{lead.categoryLabel}</p>
+            <p class="type-kicker">
+              {lead.categoryLabel}
+              {lead.video && <span class="audit-video-mark">Video</span>}
+            </p>
             <LeadTitle id="lead-title" class="home-lead-title">
               <a href={lead.href}>{lead.title}</a>
             </LeadTitle>
             <p class="home-dek">{lead.summary}</p>
-            <StoryMeta publishedAt={lead.publishedAt} updatedAt={lead.updatedAt} plain />
+            <StoryMeta publishedAt={lead.publishedAt} updatedAt={lead.updatedAt} duration={lead.video?.durationLabel} plain />
             {lead.hero && (
               <HomeFigure
                 hero={lead.hero}
+                video={Boolean(lead.video)}
                 priority
                 sizes="(min-width: 1024px) 760px, calc(100vw - 40px)"
               />
@@ -47,7 +51,10 @@ const LeadTitle = titleLevel === 2 ? "h2" : "h1";
           {secondary.map((story) => (
             <li>
               <article>
-                <p class="type-kicker">{story.categoryLabel}</p>
+                <p class="type-kicker">
+                  {story.categoryLabel}
+                  {story.video && <span class="audit-video-mark">Video</span>}
+                </p>
                 {
                   titleLevel === 2 ? (
                     <p class="home-rail-title">
@@ -59,7 +66,7 @@ const LeadTitle = titleLevel === 2 ? "h2" : "h1";
                     </h2>
                   )
                 }
-                <StoryMeta publishedAt={story.publishedAt} plain />
+                <StoryMeta publishedAt={story.publishedAt} duration={story.video?.durationLabel} plain />
               </article>
             </li>
           ))}

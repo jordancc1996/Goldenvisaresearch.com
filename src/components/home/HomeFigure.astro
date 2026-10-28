@@ -5,11 +5,12 @@ import { isImageMetadata } from "../../lib/image-metadata";
 
 interface Props {
   hero: ArticleHero;
+  video?: boolean;
   priority?: boolean;
   sizes: string;
 }
 
-const { hero, priority = false, sizes } = Astro.props;
+const { hero, video = false, priority = false, sizes } = Astro.props;
 const image = isImageMetadata(hero.src) ? hero.src : undefined;
 ---
 
@@ -29,6 +30,7 @@ const image = isImageMetadata(hero.src) ? hero.src : undefined;
         />
       )
     }
+    {video && <span class="audit-play" aria-hidden="true" />}
   </div>
   <figcaption>
     <span>{hero.caption}</span>

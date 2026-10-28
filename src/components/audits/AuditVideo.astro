@@ -1,0 +1,50 @@
+---
+import { Image } from "astro:assets";
+import AuditPlayerBoot from "./AuditPlayerBoot.astro";
+import type { AuditVideoView } from "../../lib/load-audits";
+
+interface Props {
+  video: AuditVideoView;
+  allowEmbed: boolean;
+}
+
+const { video, allowEmbed } = Astro.props;
+---
+
+<div
+  class="audit-player"
+  data-audit-player
+  data-provider={allowEmbed ? video.provider : undefined}
+  data-id={allowEmbed ? video.id : undefined}
+  data-title={allowEmbed ? video.title : undefined}
+>
+  <button type="button" class="audit-player-button" data-audit-play aria-label={`Play video: ${video.title}`}>
+    <Image
+      class="audit-video-still"
+      src={video.thumbnail}
+      alt={video.thumbnailAlt}
+      widths={[640, 960, 1280]}
+      sizes="(min-width: 768px) 680px, calc(100vw - 48px)"
+      format="webp"
+      loading="eager"
+      decoding="async"
+      fetchpriority="high"
+    />
+    <span class="audit-play audit-play-control" aria-hidden="true"></span>
+  </button>
+</div>
+{
+  video.chapters.length > 0 && (
+    <ol class="audit-chapters">
+      {video.chapters.map((chapter) => (
+        <li>
+          <button type="button" data-start={chapter.seconds}>
+            <span class="audit-chapter-time">{chapter.time}</span>
+            <span class="audit-chapter-label">{chapter.label}</span>
+          </button>
+        </li>
+      ))}
+    </ol>
+  )
+}
+{allowEmbed && <AuditPlayerBoot />}

@@ -89,6 +89,8 @@ expect(audits.includes("/audits/design-preview-cbi-program"), "audits index list
 expect(audits.includes("/audits/citizenship-by-investment"), "audits index links to a type page");
 expect(audits.includes("/audits/caribbean"), "audits index links to a region page");
 expect(audits.includes("By region:"), "audits index names the region row");
+expect(audits.includes("audit-video-mark"), "audits index marks a video");
+expect(audits.includes("18 MIN"), "audits index shows a duration");
 expect(!audits.includes("BreadcrumbList"), "audits index has no breadcrumb schema");
 
 const region = read(path.join(dist, "audits", "caribbean.html"));
@@ -103,6 +105,13 @@ expect(audit.includes("Placeholder 54."), "audit placeholder number");
 expect(audit.includes("src/content/audits/design-preview-cbi-program.md"), "audit names its file");
 expect(audit.includes('href="/audits/caribbean"'), "audit links its region");
 expect(audit.includes("editorial-main"), "audit uses the article layout");
+expect(audit.includes("Play video:"), "audit names the play control");
+expect(audit.includes('id="transcript"'), "audit includes the transcript");
+expect(!audit.includes("<iframe"), "audit does not load an iframe");
+expect(
+  !audit.includes("youtube-nocookie.com") && !audit.includes("player.vimeo.com") && !audit.includes("mediadelivery.net"),
+  "audit does not call a provider",
+);
 expect(!audit.includes("BreadcrumbList"), "audit page has no breadcrumb schema");
 
 if (failed > 0) {

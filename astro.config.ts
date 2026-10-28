@@ -10,6 +10,7 @@ import type { AstroIntegration } from "astro";
 import { defineConfig } from "astro/config";
 import { site } from "./src/data/site";
 import { articleNewsletterPlugin } from "./src/plugins/article-newsletter";
+import { auditSitemapItem } from "./src/lib/audit-sitemap";
 import { allowInSitemap } from "./src/lib/metadata";
 import { auditContentDirectory, stalePublishedWarnings } from "./src/lib/publish-audit";
 
@@ -97,6 +98,9 @@ export default defineConfig({
       ? [
           sitemap({
             filter: allowInSitemap,
+            serialize(item) {
+              return auditSitemapItem(item);
+            },
           }),
         ]
       : []),

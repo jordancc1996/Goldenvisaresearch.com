@@ -36,14 +36,18 @@ const columns = storyColumns(stories);
                     loading="eager"
                     decoding="async"
                   />
+                  {story.video && <span class="audit-play" aria-hidden="true" />}
                 </figure>
               )}
-              <p class="type-kicker story-kicker">{story.categoryLabel}</p>
+              <p class="type-kicker story-kicker">
+                {story.categoryLabel}
+                {story.video && <span class="audit-video-mark">Video</span>}
+              </p>
               <Title class:list={["story-grid-title", { "story-grid-title-lead": image }]}>
                 <a href={story.href}>{story.title}</a>
               </Title>
               {image && story.summary && <p class="story-grid-summary">{story.summary}</p>}
-              <StoryMeta publishedAt={story.publishedAt} plain />
+              <StoryMeta publishedAt={story.publishedAt} duration={story.video?.durationLabel} plain />
             </article>
           );
         })}

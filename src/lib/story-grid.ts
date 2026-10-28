@@ -4,6 +4,7 @@ export type GridStory = {
   categoryLabel: string;
   publishedAt: Date;
   summary?: string;
+  video?: { durationLabel: string };
   hero?: {
     src: import("astro").ImageMetadata;
     alt: string;

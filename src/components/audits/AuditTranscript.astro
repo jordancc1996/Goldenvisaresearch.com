@@ -1,0 +1,39 @@
+---
+interface Line {
+  time: string;
+  text: string;
+}
+
+interface Props {
+  lines: Line[];
+}
+
+const { lines } = Astro.props;
+const visible = lines.slice(0, 10);
+const rest = lines.slice(10);
+---
+
+<section class="article-section audit-transcript" id="transcript" aria-labelledby="transcript-title">
+  <h2 id="transcript-title">Transcript</h2>
+  {
+    visible.map((line) => (
+      <p>
+        <span class="audit-time">{line.time}</span>
+        {line.text}
+      </p>
+    ))
+  }
+  {
+    rest.length > 0 && (
+      <details class="audit-more">
+        <summary>Show the rest of the transcript</summary>
+        {rest.map((line) => (
+          <p>
+            <span class="audit-time">{line.time}</span>
+            {line.text}
+          </p>
+        ))}
+      </details>
+    )
+  }
+</section>

@@ -11,10 +11,12 @@ import {
 import { extractHeadings, headingIssues, titleCase } from "../src/lib/headings.ts";
 import { brokenInternalLinks, exactAnchorCounts, internalPath, orphanPaths, trailingSlashLinks, type LinkRef } from "../src/lib/links.ts";
 import { routeIndexable } from "../src/lib/indexability.ts";
+import { sitemapVideoFromAudit } from "../src/lib/audit-sitemap.ts";
 import { constructionModeFromValue, constructionNotice } from "../src/lib/preview-mode.ts";
 import {
   allowInSitemap,
   articleSchema,
+  auditVideoObject,
   personSchema,
   privatePaths,
   publicationGraph,
@@ -151,6 +153,68 @@ check("schema uses documented identity only", () => {
     url: "https://example.com/countries/portugal",
   });
   expect(page["@type"] === "WebPage", "country page");
+  const hiddenVideo = auditVideoObject({
+    origin: null,
+    name: "A recorded video",
+    description: "A recorded description.",
+    thumbnailUrl: "https://example.com/still.webp",
+    uploadDate: new Date("2026-10-31T00:00:00Z"),
+    duration: "PT18M30S",
+    embedUrl: "https://www.youtube-nocookie.com/embed/placeholder-id",
+    chapters: [],
+  });
+  expect(hiddenVideo === null, "video schema needs an origin");
+  const publishedVideo = auditVideoObject({
+    origin: "https://example.com",
+    name: "A recorded video",
+    description: "A recorded description.",
+    thumbnailUrl: "https://example.com/still.webp",
+    uploadDate: new Date("2026-10-31T00:00:00Z"),
+    duration: "PT18M30S",
+    embedUrl: "https://www.youtube-nocookie.com/embed/placeholder-id?rel=0",
+    chapters: [{ name: "Opening lines", startOffset: 0, url: "https://www.youtube-nocookie.com/embed/placeholder-id?start=0" }],
+  });
+  const videoText = JSON.stringify(publishedVideo);
+  expect(publishedVideo?.["@type"] === "VideoObject", "video object");
+  expect(videoText.includes("PT18M30S") && videoText.includes("thumbnailUrl") && videoText.includes("Clip"), videoText);
+  expect(!videoText.includes("BreadcrumbList"), "video schema has no breadcrumb");
+  const recorded = {
+    provider: "youtube" as const,
+    id: "placeholder-id",
+    title: "A recorded video",
+    description: "A recorded description.",
+    duration: "PT18M30S",
+    uploadDate: "2026-10-31",
+  };
+  expect(
+    sitemapVideoFromAudit(
+      { draft: true, material: "demonstration", verification: { status: "unverified" }, video: recorded },
+      "https://example.com/audits/note",
+      "https://example.com/still.webp",
+    ) === undefined,
+    "draft video stays out of the sitemap",
+  );
+  const listed = sitemapVideoFromAudit(
+    {
+      draft: false,
+      material: "reported",
+      comparison: false,
+      verification: { status: "verified" },
+      video: recorded,
+    },
+    "https://example.com/audits/note",
+    "https://example.com/still.webp",
+  );
+  expect(listed?.thumbnail_loc === "https://example.com/still.webp", "sitemap still");
+  expect(listed?.player_loc.includes("youtube-nocookie.com") === true && listed.duration === 1110, "sitemap player");
+  expect(
+    sitemapVideoFromAudit(
+      { draft: false, material: "reported", comparison: false, verification: { status: "verified" }, video: recorded },
+      "https://example.com/audits/note",
+      undefined,
+    ) === undefined,
+    "sitemap video needs a still",
+  );
 });
 
 check("heading validator reports case, count, and hierarchy", () => {

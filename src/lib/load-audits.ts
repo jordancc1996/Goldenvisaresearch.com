@@ -1,7 +1,10 @@
+import type { ImageMetadata } from "astro";
 import { getCollection, getEntry, render } from "astro:content";
 import { readHero, type ArticleHero, type ArticleSource, type TocHeading } from "./load-article";
 import { isPublicEntry, visibleInProduction } from "./content";
 import { isReservedAuditSlug, auditRegionLabels, auditTypeLabels, type AuditRegion, type AuditType } from "./content-schema";
+import { clockSeconds, durationLabel, type VideoProvider } from "./audit-video";
+import { isImageMetadata } from "./image-metadata";
 import { markedLabel } from "./placeholder-marks";
 import { auditsOfType, relatedAudits, splitAuditLead, storyRows } from "./audit-groups";
 
@@ -33,6 +36,21 @@ export type AuditCard = {
   indexable: boolean;
   sources: ArticleSource[];
   hero?: ArticleHero;
+  video?: AuditVideoView;
+};
+
+export type AuditVideoView = {
+  provider: VideoProvider;
+  id: string;
+  title: string;
+  description: string;
+  duration?: string;
+  durationLabel: string;
+  uploadDate?: Date;
+  thumbnail: ImageMetadata;
+  thumbnailAlt: string;
+  chapters: { time: string; label: string; seconds: number }[];
+  transcript: { time: string; text: string }[];
 };
 
 function assertAuditSlugs(
@@ -79,7 +97,16 @@ async function toCard(entry: Awaited<ReturnType<typeof getCollection<"audits">>>
       comparison: entry.data.comparison,
     },
   });
-  const hero = await readHero(
+  const video = readAuditVideo(entry.data.video);
+  const hero = video
+    ? {
+        src: video.thumbnail,
+        alt: video.thumbnailAlt,
+        caption: entry.data.heroCaption || video.title,
+        credit: entry.data.heroCredit || "No separate credit is recorded.",
+        focal: entry.data.heroFocal,
+      }
+    : await readHero(
     entry.data.heroImage && entry.data.heroImageAlt && entry.data.heroCaption && entry.data.heroCredit
       ? {
           src: entry.data.heroImage,
@@ -119,6 +146,31 @@ async function toCard(entry: Awaited<ReturnType<typeof getCollection<"audits">>>
       accessedOn: source.accessedDate,
     })),
     hero,
+    video,
+  };
+}
+
+function readAuditVideo(
+  video: Awaited<ReturnType<typeof getCollection<"audits">>>[number]["data"]["video"],
+): AuditVideoView | undefined {
+  if (!video?.thumbnail || !video.thumbnailAlt || !isImageMetadata(video.thumbnail)) return undefined;
+  const chapters = (video.chapters ?? []).flatMap((chapter) => {
+    const seconds = clockSeconds(chapter.time);
+    if (seconds === null) return [];
+    return [{ time: chapter.time, label: chapter.label, seconds }];
+  });
+  return {
+    provider: video.provider,
+    id: video.id,
+    title: video.title,
+    description: video.description,
+    duration: video.duration,
+    durationLabel: video.duration ? durationLabel(video.duration) : "",
+    uploadDate: video.uploadDate,
+    thumbnail: video.thumbnail,
+    thumbnailAlt: video.thumbnailAlt,
+    chapters,
+    transcript: video.transcript ?? [],
   };
 }
 
@@ -137,10 +189,11 @@ export async function loadAuditPage(id: string) {
   const headings: TocHeading[] = rendered.headings
     .filter((heading) => heading.depth === 2)
     .map((heading) => ({ depth: heading.depth, slug: heading.slug, text: heading.text }));
-  headings.push(
-    { depth: 2, slug: "what-to-check-before-you-invest", text: "What to check before you invest" },
-    { depth: 2, slug: "sources", text: "Sources" },
-  );
+  headings.push({ depth: 2, slug: "what-to-check-before-you-invest", text: "What to check before you invest" });
+  if (audit.video && audit.video.transcript.length > 0) {
+    headings.push({ depth: 2, slug: "transcript", text: "Transcript" });
+  }
+  headings.push({ depth: 2, slug: "sources", text: "Sources" });
   return {
     audit,
     headings,

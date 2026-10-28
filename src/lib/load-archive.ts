@@ -97,6 +97,7 @@ export async function loadPublishedReports(): Promise<ArchiveStory[]> {
 
 export type HomeStory = ArchiveStory & {
   hero?: ArticleHero;
+  video?: { durationLabel: string };
 };
 
 export async function loadHomeNews(): Promise<HomeStory[]> {

@@ -188,6 +188,39 @@ export function auditArticleSchema(input: {
   };
 }
 
+export function auditVideoObject(input: {
+  origin: string | null;
+  name: string;
+  description: string;
+  thumbnailUrl: string;
+  uploadDate: Date;
+  duration: string;
+  embedUrl: string;
+  chapters: { name: string; startOffset: number; url: string }[];
+}): Record<string, unknown> | null {
+  if (!input.origin) return null;
+  return {
+    "@context": "https://schema.org",
+    "@type": "VideoObject",
+    name: input.name,
+    description: input.description,
+    thumbnailUrl: input.thumbnailUrl,
+    uploadDate: input.uploadDate.toISOString(),
+    duration: input.duration,
+    embedUrl: input.embedUrl,
+    ...(input.chapters.length > 0
+      ? {
+          hasPart: input.chapters.map((chapter) => ({
+            "@type": "Clip",
+            name: chapter.name,
+            startOffset: chapter.startOffset,
+            url: chapter.url,
+          })),
+        }
+      : {}),
+  };
+}
+
 export function canonicalFor(pathname: string): string | null {
   return canonicalUrl(pathname);
 }

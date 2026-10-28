@@ -64,6 +64,7 @@ import {
   newsInputSchema,
   programInputSchema,
 } from "../src/lib/content-schema.ts";
+import { durationLabel, embedUrl } from "../src/lib/audit-video.ts";
 import { buildCoverage } from "../src/lib/article-coverage.ts";
 import { newsletterInsertIndex } from "../src/lib/newsletter-markup.ts";
 import {
@@ -204,6 +205,67 @@ check("rejects an audit with a missing or invalid region", () => {
   expect(auditInputSchema.safeParse({ ...base, region: "Portugal" }).success === false, "a country name is not a region");
   const accepted = auditInputSchema.safeParse({ ...base, region: "caribbean" });
   expect(accepted.success, accepted.success ? "" : accepted.error.issues.map((issue) => issue.message).join("; "));
+});
+
+check("rejects a published audit video that lacks a still, duration, date, or transcript", () => {
+  const video = {
+    provider: "youtube",
+    id: "placeholder-id",
+    title: "A recorded video",
+    description: "A recorded description.",
+  };
+  const published = {
+    title: "A recorded audit",
+    slug: "recorded-audit",
+    standfirst: "A recorded standfirst.",
+    subjectName: "Recorded subject",
+    auditType: "CBI Program" as const,
+    region: "caribbean" as const,
+    country: "Design preview country",
+    publishedDate: "2026-10-31",
+    lastVerifiedDate: "2026-10-31",
+    verdict: "Layout copy only.",
+    draft: false,
+    material: "reported" as const,
+    comparison: false,
+    verification: { status: "verified" as const, verifiedOn: "2026-10-31" },
+    video,
+  };
+  const missing = auditInputSchema.safeParse(published);
+  expect(missing.success === false, "published video is incomplete");
+  if (!missing.success) {
+    const messages = missing.error.issues.map((issue) => issue.message).join(" ");
+    expect(messages.includes("thumbnail"), messages);
+    expect(messages.includes("duration"), messages);
+    expect(messages.includes("upload date"), messages);
+    expect(messages.includes("transcript"), messages);
+  }
+  const draft = auditInputSchema.safeParse({
+    ...published,
+    draft: true,
+    material: "demonstration",
+    verification: { status: "unverified" },
+  });
+  expect(draft.success, draft.success ? "" : draft.error.issues.map((issue) => issue.message).join("; "));
+  const complete = auditInputSchema.safeParse({
+    ...published,
+    video: {
+      ...video,
+      duration: "PT18M30S",
+      uploadDate: "2026-10-31",
+      thumbnail: "figure.webp",
+      thumbnailAlt: "A still image.",
+      chapters: [{ time: "04:10", label: "Middle lines" }],
+      transcript: [{ time: "00:00", text: "Layout line." }],
+    },
+  });
+  expect(complete.success, complete.success ? "" : complete.error.issues.map((issue) => issue.message).join("; "));
+  expect(auditInputSchema.safeParse({ ...published, video: { ...video, provider: "portugal" } }).success === false, "a country is not a provider");
+  expect(durationLabel("PT18M30S") === "18 MIN", "duration label");
+  const youtube = embedUrl("youtube", "placeholder-id", 70);
+  expect(youtube.includes("youtube-nocookie.com") && youtube.includes("rel=0") && youtube.includes("modestbranding=1"), youtube);
+  expect(embedUrl("vimeo", "placeholder-id").includes("byline=0"), "vimeo");
+  expect(embedUrl("bunny", "placeholder/library").includes("iframe.mediadelivery.net/embed/placeholder/library"), "bunny");
 });
 
 check("rejects news with no title", () => {
