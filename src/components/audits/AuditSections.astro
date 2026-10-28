@@ -1,0 +1,39 @@
+---
+import type { TocHeading } from "../../lib/load-article";
+
+interface Props {
+  headings: TocHeading[];
+}
+
+const { headings } = Astro.props;
+const sections = headings.filter((heading) => heading.depth === 2);
+const first = sections.slice(0, 3);
+const rest = sections.slice(3);
+---
+
+{
+  sections.length > 0 && (
+    <nav class="audit-sections" aria-label="In this audit">
+      <p class="toc-label">In this audit</p>
+      <ol class="audit-toc">
+        {first.map((heading) => (
+          <li>
+            <a href={`#${heading.slug}`}>{heading.text}</a>
+          </li>
+        ))}
+      </ol>
+      {rest.length > 0 && (
+        <details class="audit-more">
+          <summary>Show all {sections.length} sections</summary>
+          <ol class="audit-toc" start={first.length + 1}>
+            {rest.map((heading) => (
+              <li>
+                <a href={`#${heading.slug}`}>{heading.text}</a>
+              </li>
+            ))}
+          </ol>
+        </details>
+      )}
+    </nav>
+  )
+}

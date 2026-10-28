@@ -53,6 +53,7 @@ check("construction mode stays on until the launch switch", () => {
 
 function constructionContentRoute(route: string): boolean {
   if (/^\/(?:news|reports|programs|countries|authors|press)\/[^/]+$/.test(route)) return true;
+  if (/^\/audits\/[^/]+$/.test(route)) return true;
   return /^\/(?:news|reports)\/(?:page\/\d+|[^/]+\/page\/\d+)$/.test(route);
 }
 
@@ -68,6 +69,14 @@ check("sitemap and news window exclude private and stale urls", () => {
   expect(allowInSitemap("https://example.com/"), "home");
   expect(allowInSitemap("https://example.com/corrections"), "corrections");
   expect(!allowInSitemap("https://example.com/news"), "empty news");
+  expect(!allowInSitemap("https://example.com/audits"), "empty audits");
+  expect(!allowInSitemap("https://example.com/audits/citizenship-by-investment"), "empty citizenship audits");
+  expect(!allowInSitemap("https://example.com/audits/residency-by-investment"), "empty residency audits");
+  expect(!allowInSitemap("https://example.com/audits/investment-offerings"), "empty offering audits");
+  expect(!allowInSitemap("https://example.com/audits/caribbean"), "empty caribbean audits");
+  expect(!allowInSitemap("https://example.com/audits/europe"), "empty europe audits");
+  expect(!allowInSitemap("https://example.com/audits/south-america"), "empty south america audits");
+  expect(!allowInSitemap("https://example.com/audits/design-preview-cbi-program"), "draft audit");
   expect(!allowInSitemap("https://example.com/reports/policy-analysis"), "empty report type");
   expect(!allowInSitemap("https://example.com/countries"), "empty countries");
   expect(!allowInSitemap("https://example.com/programs"), "empty programs");
@@ -246,10 +255,20 @@ check("built pages match metadata, headings, links, and images", () => {
       "market-research",
       "country-research",
     ]);
+    const auditReserve = new Set([
+      "citizenship-by-investment",
+      "residency-by-investment",
+      "investment-offerings",
+      "methodology",
+      "caribbean",
+      "europe",
+      "south-america",
+    ]);
     const story =
       parts.length === 2 &&
-      ["news", "reports", "programs", "countries", "authors"].includes(parts[0]) &&
-      !archiveSlug.has(parts[1]);
+      ((["news", "reports", "programs", "countries", "authors"].includes(parts[0]) &&
+        !archiveSlug.has(parts[1])) ||
+        (parts[0] === "audits" && !auditReserve.has(parts[1])));
     if (!story) {
       expect(page.html.includes('data-pagefind-ignore="all"'), `${page.route} is outside the search index`);
     }
@@ -295,7 +314,7 @@ check("built pages match metadata, headings, links, and images", () => {
       expect(/\bwidth="\d+"/.test(tag) && /\bheight="\d+"/.test(tag), `${page.route} dimensions`);
       expect(/\.webp/.test(tag) || /\.svg/.test(tag), `${page.route} image format`);
     }
-    const title = page.html.match(/<title>([^<]*)<\/title>/)?.[1] ?? "";
+    const title = strip(page.html.match(/<title>([^<]*)<\/title>/)?.[1] ?? "");
     const description = page.html.match(/<meta name="description" content="([^"]*)"/)?.[1] ?? "";
     const visible = `${title} ${description} ${headings.map((heading) => heading.text).join(" ")}`;
     expect(!comparisonPatterns.some((pattern) => pattern.test(visible)), `${page.route} comparison query`);

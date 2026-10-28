@@ -1,0 +1,27 @@
+---
+import TrustPage from "../../components/trust/TrustPage.astro";
+import { auditMethodology } from "../../data/audits";
+import { routeIndexable } from "../../lib/indexability";
+---
+
+<TrustPage
+  title={auditMethodology.h1}
+  description={auditMethodology.description}
+  noindex={!routeIndexable(auditMethodology.path)}
+>
+  <p>{auditMethodology.description}</p>
+  <h2>What we audit</h2>
+  <p>This section is a placeholder. It does not name a program, a fee, or a company.</p>
+  <h2>How we assess programs and offerings</h2>
+  <p>This section is a placeholder. The assessment rules have not been written.</p>
+  <h2>Sources we use</h2>
+  <p>This section is a placeholder. It does not cite a document.</p>
+  <h2>How we verify facts</h2>
+  <p>This section is a placeholder. A published audit still has to name the source it checked and the date it was checked.</p>
+  <h2>Conflicts of interest</h2>
+  <p>This section is a placeholder. No conflict rule is recorded here.</p>
+  <h2>Right of reply and corrections</h2>
+  <p>This section is a placeholder. A correction, when one exists, is recorded on the corrections page.</p>
+  <h2>Update policy</h2>
+  <p>This section is a placeholder. An audit shows the last verified date stored on its file.</p>
+</TrustPage>

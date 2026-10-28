@@ -393,6 +393,102 @@ export const pressInputSchema = createPressSchema({
   report: idSchema,
 });
 
+/**
+ * Regions an audit can name. Add a value and a label here, then add a page
+ * in auditRegionPages, when a new region should have its own route.
+ * Later values can include middle-east, asia-pacific, and north-america.
+ */
+export const auditRegions = ["caribbean", "europe", "south-america"] as const;
+
+export type AuditRegion = (typeof auditRegions)[number];
+
+export const auditRegionSchema = z.enum(auditRegions);
+
+export const auditRegionLabels: Record<AuditRegion, string> = {
+  caribbean: "Caribbean",
+  europe: "Europe",
+  "south-america": "South America",
+};
+
+export const reservedAuditSlugs = [
+  "citizenship-by-investment",
+  "residency-by-investment",
+  "investment-offerings",
+  "methodology",
+  ...auditRegions,
+] as const;
+
+export function isReservedAuditSlug(id: string): boolean {
+  return (reservedAuditSlugs as readonly string[]).includes(id);
+}
+
+export const auditTypes = ["CBI Program", "RBI Program", "Investment Offering"] as const;
+
+export const auditTypeSchema = z.enum(auditTypes);
+
+export type AuditType = (typeof auditTypes)[number];
+
+export const auditTypeLabels: Record<AuditType, string> = {
+  "CBI Program": "CBI program audit",
+  "RBI Program": "RBI program audit",
+  "Investment Offering": "Offering audit",
+};
+
+const auditSourceSchema = z.strictObject({
+  label: z.string().min(1),
+  url: z.url(),
+  accessedDate: z.coerce.date().optional(),
+});
+
+export function createAuditSchema(heroImage: z.ZodType = z.string().min(1).optional()) {
+  return z
+    .strictObject({
+      title: z.string().min(1),
+      slug: z.string().min(1).refine((slug) => !isReservedAuditSlug(slug), "reserved for an audit route"),
+      standfirst: z.string().min(1),
+      subjectName: z.string().min(1),
+      auditType: auditTypeSchema,
+      region: auditRegionSchema,
+      country: z.string().min(1),
+      umbrellaProgram: z.string().min(1).optional(),
+      publishedDate: z.coerce.date(),
+      lastVerifiedDate: z.coerce.date(),
+      verdict: z.string().min(1),
+      featured: z.boolean().default(false),
+      heroImage,
+      heroImageAlt: z.string().min(1).optional(),
+      heroCaption: z.string().min(1).optional(),
+      heroCredit: z.string().min(1).optional(),
+      heroFocal: z.string().min(1).optional(),
+      sources: z.array(auditSourceSchema).default([]),
+      reviewedBy: z.string().min(1).optional(),
+      draft: z.boolean().default(true),
+      material: materialSchema.default("demonstration"),
+      comparison: z.boolean().default(false),
+      verification: verificationSchema.default({ status: "unverified" }),
+    })
+    .superRefine((data, ctx) => {
+      const image = [data.heroImage, data.heroImageAlt, data.heroCaption, data.heroCredit];
+      const present = image.filter(Boolean).length;
+      if (present !== 0 && present !== image.length) {
+        ctx.addIssue({
+          code: "custom",
+          message: "An audit image needs a path, alt text, caption, and credit",
+          path: ["heroImage"],
+        });
+      }
+      if (data.auditType === "Investment Offering" && !data.umbrellaProgram) {
+        ctx.addIssue({
+          code: "custom",
+          message: "An offering audit names the program it sits under",
+          path: ["umbrellaProgram"],
+        });
+      }
+    });
+}
+
+export const auditInputSchema = createAuditSchema();
+
 export type InvestmentThreshold = z.infer<typeof investmentThresholdSchema>;
 export type TextFact = z.infer<typeof textFactSchema>;
 export type ProgramType = z.infer<typeof programTypeSchema>;

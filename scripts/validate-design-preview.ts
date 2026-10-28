@@ -83,6 +83,28 @@ expect(
   "build includes the placeholder figure",
 );
 
+const audits = read(path.join(dist, "audits.html"));
+expect(audits.includes('content="noindex, nofollow"'), "audits index noindex");
+expect(audits.includes("/audits/design-preview-cbi-program"), "audits index lists a placeholder");
+expect(audits.includes("/audits/citizenship-by-investment"), "audits index links to a type page");
+expect(audits.includes("/audits/caribbean"), "audits index links to a region page");
+expect(audits.includes("By region:"), "audits index names the region row");
+expect(!audits.includes("BreadcrumbList"), "audits index has no breadcrumb schema");
+
+const region = read(path.join(dist, "audits", "caribbean.html"));
+expect(region.includes('content="noindex, nofollow"'), "region page noindex");
+expect(region.includes("/audits/design-preview-cbi-program"), "region page lists its placeholder");
+expect(region.includes('aria-current="page"'), "region page marks the current link");
+expect(!region.includes("BreadcrumbList"), "region page has no breadcrumb schema");
+
+const audit = read(path.join(dist, "audits", "design-preview-cbi-program.html"));
+expect(audit.includes('content="noindex, nofollow"'), "audit page noindex");
+expect(audit.includes("Placeholder 54."), "audit placeholder number");
+expect(audit.includes("src/content/audits/design-preview-cbi-program.md"), "audit names its file");
+expect(audit.includes('href="/audits/caribbean"'), "audit links its region");
+expect(audit.includes("editorial-main"), "audit uses the article layout");
+expect(!audit.includes("BreadcrumbList"), "audit page has no breadcrumb schema");
+
 if (failed > 0) {
   console.error(`${failed} construction checks failed`);
   process.exit(1);

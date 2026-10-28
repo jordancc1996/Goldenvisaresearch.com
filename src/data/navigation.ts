@@ -13,6 +13,7 @@ export type NavGroup = {
 export const editionNav: NavItem[] = [
   { label: "News", href: "/news" },
   { label: "Research", href: "/reports" },
+  { label: "Audits", href: "/audits" },
   { label: "Golden visas", href: "/topics/golden-visa" },
   { label: "Residency by investment", href: "/topics/residency-by-investment" },
   { label: "Citizenship by investment", href: "/topics/citizenship-by-investment" },
@@ -58,14 +59,15 @@ export const sectionDirectory: NavGroup[] = [
     items: [
       editionNav[0],
       editionNav[1],
-      editionNav[5],
+      editionNav[2],
+      editionNav[6],
       moreNav[0],
       moreNav[1],
     ],
   },
   {
     label: "Topics",
-    items: [editionNav[2], editionNav[3], editionNav[4]],
+    items: [editionNav[3], editionNav[4], editionNav[5]],
   },
   {
     label: "Publication",
@@ -89,7 +91,7 @@ export type Crumb = {
 };
 
 export function navIsCurrent(pathname: string, href: string): boolean {
-  const path = pathname.replace(/\/+$/, "") || "/";
+  const path = pathname.replace(/\.html$/, "").replace(/\/+$/, "") || "/";
   if (href === "/") return path === "/";
   return path === href || path.startsWith(`${href}/`);
 }

@@ -1,0 +1,34 @@
+---
+const phases = [
+  {
+    label: "01",
+    title: "Before you commit",
+    text: "Read the documents the audit cites. List any term the record does not verify.",
+  },
+  {
+    label: "02",
+    title: "During due diligence",
+    text: "Compare the seller's description with the sources named in the audit. Keep the two apart when they disagree.",
+  },
+  {
+    label: "03",
+    title: "After investing",
+    text: "Check the last verified date. A later change in the program is not described here unless the audit is updated.",
+  },
+];
+---
+
+<section class="article-section" id="what-to-check-before-you-invest" aria-labelledby="what-to-check-title">
+  <h2 id="what-to-check-title">What to check before you invest</h2>
+  <ol class="audit-phases">
+    {
+      phases.map((phase) => (
+        <li>
+          <p class="type-kicker">{phase.label}</p>
+          <h3>{phase.title}</h3>
+          <p>{phase.text}</p>
+        </li>
+      ))
+    }
+  </ol>
+</section>

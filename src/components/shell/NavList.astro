@@ -8,7 +8,7 @@ interface Props {
 }
 
 const { label, variant, items = primaryNav } = Astro.props;
-const current = Astro.url.pathname.replace(/\/+$/, "") || "/";
+const current = Astro.url.pathname.replace(/\.html$/, "").replace(/\/+$/, "") || "/";
 
 function isCurrent(href: string) {
   const path = href.replace(/\/+$/, "") || "/";

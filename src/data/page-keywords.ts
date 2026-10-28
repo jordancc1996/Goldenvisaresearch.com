@@ -1,3 +1,5 @@
+import { auditIndex, auditMethodology, auditRegionPages, auditTypePages } from "./audits.ts";
+
 export type KeywordLocation = "h1" | "title" | "description" | "slug" | "intro";
 
 export type KeywordException = {
@@ -282,12 +284,141 @@ export const keywordPages: KeywordPage[] = [
       },
     ],
   },
+  {
+    path: auditIndex.path,
+    keyword: "audits",
+    intent: "informational",
+    h1: auditIndex.h1,
+    description: auditIndex.description,
+    exceptions: [
+      {
+        location: "title",
+        proposed: "The approved title starts with CBI and RBI.",
+      },
+      {
+        location: "description",
+        proposed: "The approved standfirst does not place audits in the first seven words.",
+      },
+      {
+        location: "intro",
+        proposed: "The approved standfirst does not place audits in the first ten words.",
+      },
+    ],
+  },
+  {
+    path: auditTypePages[0].path,
+    keyword: "citizenship by investment audits",
+    intent: "informational",
+    h1: auditTypePages[0].h1,
+    description: auditTypePages[0].description,
+    exceptions: [
+      {
+        location: "slug",
+        proposed: "The route is /audits/citizenship-by-investment. The word audits stays on the parent segment.",
+      },
+    ],
+  },
+  {
+    path: auditTypePages[1].path,
+    keyword: "residency by investment audits",
+    intent: "informational",
+    h1: auditTypePages[1].h1,
+    description: auditTypePages[1].description,
+    exceptions: [
+      {
+        location: "slug",
+        proposed: "The route is /audits/residency-by-investment. The word audits stays on the parent segment.",
+      },
+    ],
+  },
+  {
+    path: auditTypePages[2].path,
+    keyword: "investment offering audits",
+    intent: "informational",
+    h1: auditTypePages[2].h1,
+    description: auditTypePages[2].description,
+    exceptions: [
+      {
+        location: "slug",
+        proposed: "The route is /audits/investment-offerings. The word audits stays on the parent segment.",
+      },
+    ],
+  },
+  {
+    path: auditMethodology.path,
+    keyword: "audit",
+    intent: "informational",
+    h1: auditMethodology.h1,
+    description: auditMethodology.description,
+    exceptions: [],
+  },
+  {
+    path: auditRegionPages[0].path,
+    keyword: "caribbean program audits",
+    intent: "informational",
+    h1: auditRegionPages[0].h1,
+    description: auditRegionPages[0].description,
+    exceptions: [
+      {
+        location: "h1",
+        proposed: "The H1 names investment migration audits. The title keyword stays program audits.",
+      },
+      {
+        location: "slug",
+        proposed: "The route is /audits/caribbean. The words program audits stay in the title.",
+      },
+    ],
+  },
+  {
+    path: auditRegionPages[1].path,
+    keyword: "european program audits",
+    intent: "informational",
+    h1: auditRegionPages[1].h1,
+    description: auditRegionPages[1].description,
+    exceptions: [
+      {
+        location: "h1",
+        proposed: "The H1 names investment migration audits. The title keyword stays program audits.",
+      },
+      {
+        location: "slug",
+        proposed: "The route is /audits/europe. European is the title form of that region.",
+      },
+    ],
+  },
+  {
+    path: auditRegionPages[2].path,
+    keyword: "south american program audits",
+    intent: "informational",
+    h1: auditRegionPages[2].h1,
+    description: auditRegionPages[2].description,
+    exceptions: [
+      {
+        location: "h1",
+        proposed: "The H1 names investment migration audits. The title keyword stays program audits.",
+      },
+      {
+        location: "slug",
+        proposed: "The route is /audits/south-america. South American is the title form of that region.",
+      },
+    ],
+  },
 ];
+
+const auditTitles = new Map<string, string>([
+  [auditIndex.path, auditIndex.title],
+  [auditTypePages[0].path, auditTypePages[0].title],
+  [auditTypePages[1].path, auditTypePages[1].title],
+  [auditTypePages[2].path, auditTypePages[2].title],
+  [auditRegionPages[0].path, auditRegionPages[0].title],
+  [auditRegionPages[1].path, auditRegionPages[1].title],
+  [auditRegionPages[2].path, auditRegionPages[2].title],
+]);
 
 export function expectedTitle(page: KeywordPage): string {
   if (page.path === "/") return "Golden Visa Research";
   if (page.path === "/newsletter") return "Newsletter - Golden Visa Research";
-  return `${page.h1} - Golden Visa Research`;
+  return auditTitles.get(page.path) ?? `${page.h1} - Golden Visa Research`;
 }
 
 export function keywordHits(page: KeywordPage, intro: string): Record<KeywordLocation, boolean> {

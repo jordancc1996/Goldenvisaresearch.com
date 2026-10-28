@@ -1,0 +1,140 @@
+---
+import EditionHeading from "../home/EditionHeading.astro";
+import Opening from "../home/Opening.astro";
+import StoryGrid from "../home/StoryGrid.astro";
+import AuditFilters from "./AuditFilters.astro";
+import AuditRequest from "./AuditRequest.astro";
+import { auditIndex, auditMethodology, auditRegionPages, auditTypePages } from "../../data/audits";
+import { canonicalUrl, site } from "../../data/site";
+import { auditsInRegion, auditsOfType, splitAuditLead, storyRows, type AuditCard } from "../../lib/load-audits";
+import { collectionPageSchema, jsonLd } from "../../lib/metadata";
+import { routeIndexable } from "../../lib/indexability";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/edition.css";
+import "../../styles/home.css";
+import "../../styles/audits.css";
+
+interface Props {
+  title: string;
+  h1: string;
+  description: string;
+  stories: AuditCard[];
+  showGroups?: boolean;
+  showRegions?: boolean;
+  showTypes?: boolean;
+  showAll?: boolean;
+  showRequest?: boolean;
+}
+
+const {
+  title,
+  h1,
+  description,
+  stories,
+  showGroups = false,
+  showRegions = false,
+  showTypes = false,
+  showAll = true,
+  showRequest = false,
+} = Astro.props;
+const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/+$/, "") || "/";
+const { lead, secondary } = splitAuditLead(stories);
+const rows = storyRows(stories);
+const canonical = canonicalUrl(path);
+const published = stories.filter((story) => story.indexable);
+
+function groupId(value: string) {
+  return `audit-group-${value.toLowerCase().replaceAll(" ", "-")}`;
+}
+const schema =
+  canonical && site.origin && routeIndexable(path) && published.length > 0
+    ? collectionPageSchema({
+        name: h1,
+        description,
+        url: canonical,
+        items: published.map((story) => ({
+          name: story.title,
+          url: new URL(story.href, canonical).href,
+        })),
+      })
+    : null;
+const schemaJson = jsonLd(schema);
+const groups = showGroups
+  ? auditTypePages
+      .map((page) => ({ ...page, stories: auditsOfType(stories, page.auditType) }))
+      .filter((group) => group.stories.length > 0)
+  : [];
+const regions = showRegions
+  ? auditRegionPages
+      .map((page) => ({ ...page, stories: auditsInRegion(stories, page.region).slice(0, 4) }))
+      .filter((group) => group.stories.length > 0)
+  : [];
+const types = showTypes
+  ? auditTypePages
+      .map((page) => ({ ...page, stories: auditsOfType(stories, page.auditType) }))
+      .filter((group) => group.stories.length > 0)
+  : [];
+---
+
+<BaseLayout title={title} description={description} noindex={!routeIndexable(path)}>
+  {schemaJson && <script is:inline type="application/ld+json" set:html={schemaJson} />}
+  <div class="home">
+    <header class="home-section audit-header shell-wrap">
+      <div class="type-kicker">{auditIndex.eyebrow}</div>
+      <h1 class="home-lead-title">{h1}</h1>
+      <p class="home-dek">{description}</p>
+      <p class="home-note">
+        Every audit follows the same published <a href={auditMethodology.path}>methodology</a> and cites its sources.
+      </p>
+      <AuditFilters />
+    </header>
+    {lead && <Opening lead={lead} secondary={secondary} titleLevel={2} />}
+    {showRequest && !showAll && lead && (
+      <div class="shell-wrap">
+        <AuditRequest />
+      </div>
+    )}
+    {
+      stories.length === 0 && <p class="home-status shell-wrap">No audits are published.</p>
+    }
+    {
+      showAll && rows.length > 0 && (
+        <section class="home-section shell-wrap" aria-labelledby="all-audits-title">
+          <EditionHeading title="All audits" labelledby="all-audits-title" />
+          {rows.map((row, index) => (
+            <div class="audit-row">
+              <StoryGrid stories={row} />
+              {showRequest && index === 0 && <AuditRequest />}
+            </div>
+          ))}
+        </section>
+      )
+    }
+    {
+      groups.map((group) => (
+        <section class="home-section shell-wrap" aria-labelledby={groupId(group.auditType)}>
+          <EditionHeading title={group.sectionTitle} labelledby={groupId(group.auditType)} href={group.path} />
+          <StoryGrid stories={storyRows(group.stories)[0] ?? []} headings={false} />
+        </section>
+      ))
+    }
+    {
+      regions.map((group) => (
+        <section class="home-section shell-wrap" aria-labelledby={`audit-region-${group.region}`}>
+          <EditionHeading title={group.sectionTitle} labelledby={`audit-region-${group.region}`} href={group.path} />
+          <StoryGrid stories={group.stories} headings={false} />
+        </section>
+      ))
+    }
+    {
+      types.map((group) => (
+        <section class="home-section shell-wrap" aria-labelledby={groupId(group.groupTitle)}>
+          <EditionHeading title={group.groupTitle} labelledby={groupId(group.groupTitle)} />
+          {storyRows(group.stories).map((row) => (
+            <StoryGrid stories={row} />
+          ))}
+        </section>
+      ))
+    }
+  </div>
+</BaseLayout>

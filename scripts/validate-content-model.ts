@@ -16,6 +16,14 @@ import {
 import { pressRouteParams, supportingLinks } from "../src/lib/press.ts";
 import { displayedStatus, reviewState } from "../src/lib/article-display.ts";
 import { regionQueryMatches } from "../src/data/home-regions.ts";
+import { storyColumns } from "../src/lib/story-grid.ts";
+import {
+  auditsInRegion,
+  groupedAudits,
+  relatedAudits,
+  splitAuditLead,
+  storyRows,
+} from "../src/lib/audit-groups.ts";
 import { site } from "../src/data/site.ts";
 import { correctionsForPath } from "../src/lib/corrections.ts";
 import { formResult } from "../src/lib/form-response.ts";
@@ -47,6 +55,7 @@ import {
   topicCoverage,
 } from "../src/lib/topic-assign.ts";
 import {
+  auditInputSchema,
   authorSchema,
   correctionSchema,
   countryInputSchema,
@@ -172,6 +181,29 @@ check("rejects a negative investment amount", () => {
 check("rejects unknown frontmatter fields", () => {
   const parsed = countryInputSchema.safeParse(parseYaml(readFixture("invalid-unknown-field.yml")));
   expect(parsed.success === false, "strict schema should reject unexpected");
+});
+
+check("rejects an audit with a missing or invalid region", () => {
+  const base = {
+    title: "A placeholder audit",
+    slug: "placeholder-audit",
+    standfirst: "Layout copy only.",
+    subjectName: "Placeholder subject",
+    auditType: "CBI Program",
+    country: "Portugal",
+    publishedDate: "2026-10-31",
+    lastVerifiedDate: "2026-10-31",
+    verdict: "Layout copy only.",
+    draft: true,
+    material: "demonstration",
+    comparison: false,
+    verification: { status: "unverified" },
+  };
+  expect(auditInputSchema.safeParse(base).success === false, "region is required");
+  expect(auditInputSchema.safeParse({ ...base, region: "atlantic" }).success === false, "unknown region");
+  expect(auditInputSchema.safeParse({ ...base, region: "Portugal" }).success === false, "a country name is not a region");
+  const accepted = auditInputSchema.safeParse({ ...base, region: "caribbean" });
+  expect(accepted.success, accepted.success ? "" : accepted.error.issues.map((issue) => issue.message).join("; "));
 });
 
 check("rejects news with no title", () => {
@@ -479,6 +511,15 @@ check("archives paginate, filter, and exclude unpublished records", () => {
   expect(filterCountries(countries, "", "asia").length === 1, "region filter");
   expect(groupCountries(countries).map((group) => group.region).join(",") === "europe,asia", "region groups");
   expect(reservedArchiveSlug("news", "policy") && !reservedArchiveSlug("news", "portugal"), "reserved slug");
+  expect(
+    reservedArchiveSlug("audits", "methodology") &&
+      reservedArchiveSlug("audits", "citizenship-by-investment") &&
+      reservedArchiveSlug("audits", "caribbean") &&
+      reservedArchiveSlug("audits", "europe") &&
+      reservedArchiveSlug("audits", "south-america") &&
+      !reservedArchiveSlug("audits", "design-preview-cbi-program"),
+    "reserved audit slug",
+  );
   expect(reservedArchiveSlug("reports", "page"), "reports page slug is reserved");
   expect(regionQueryMatches("asia", "asia-pacific") && regionQueryMatches("oceania", "asia-pacific"), "asia-pacific");
   expect(!regionQueryMatches("europe", "asia-pacific") && regionQueryMatches("europe", "europe"), "region query");
@@ -730,6 +771,33 @@ check("indexing follows the records a route displays", () => {
 
   const empty = indexInventory();
   expect(!sectionIndexable("/news", empty), "zero news");
+  expect(!sectionIndexable("/audits", empty), "zero audits");
+  expect(!sectionIndexable("/audits/citizenship-by-investment", empty), "zero citizenship audits");
+  expect(!sectionIndexable("/audits/caribbean", empty), "zero caribbean audits");
+  expect(!sectionIndexable("/audits/europe", empty), "zero europe audits");
+  expect(!sectionIndexable("/audits/south-america", empty), "zero south america audits");
+  expect(sectionIndexable("/audits/methodology", empty), "audit methodology");
+  expect(
+    sectionIndexable(
+      "/audits/citizenship-by-investment",
+      indexInventory({ audits: [{ id: "note", auditType: "CBI Program", auditRegion: "caribbean", countryIds: [] }] }),
+    ),
+    "published citizenship audit",
+  );
+  expect(
+    sectionIndexable(
+      "/audits/caribbean",
+      indexInventory({ audits: [{ id: "note", auditType: "CBI Program", auditRegion: "caribbean", countryIds: [] }] }),
+    ),
+    "published caribbean audit",
+  );
+  expect(
+    !sectionIndexable(
+      "/audits/europe",
+      indexInventory({ audits: [{ id: "note", auditType: "RBI Program", auditRegion: "caribbean", countryIds: [] }] }),
+    ),
+    "other region stays empty",
+  );
   expect(!sectionIndexable("/news/policy", empty), "zero policy");
   expect(!sectionIndexable("/reports", empty), "zero research");
   expect(!sectionIndexable("/reports/policy-analysis", empty), "zero policy analysis");
@@ -879,6 +947,61 @@ check("indexing follows the records a route displays", () => {
   expect(links.length === 1 && links[0]?.href === "/news/note", "supporting links omit missing and unpublished records");
   expect(!sectionIndexable("/llms.txt", empty) && !sectionIndexable("/content-index.json", empty), "machine files stay out of the index");
   expect(!sectionIndexable("/content/news/policy-note.md", relevant), "markdown copy stays out of the index");
+});
+
+check("audit region pages group 0, 1, 4, and 10 records", () => {
+  const types = [
+    { auditType: "CBI Program" },
+    { auditType: "RBI Program" },
+    { auditType: "Investment Offering" },
+  ] as const;
+  const sample = (count: number, region = "caribbean", auditType = "CBI Program") =>
+    Array.from({ length: count }, (_, index) => ({
+      id: `${region}-${index}`,
+      region,
+      auditType,
+      featured: index === 0,
+    }));
+
+  expect(groupedAudits([], types).length === 0, "zero audits omit every type section");
+  expect(auditsInRegion(sample(1, "europe"), "caribbean").length === 0, "an empty region has no stories");
+
+  const one = sample(1);
+  expect(groupedAudits(one, types).length === 1 && groupedAudits(one, types)[0]?.stories.length === 1, "one audit");
+  const oneLead = splitAuditLead(one);
+  expect(oneLead.lead?.id === "caribbean-0" && oneLead.secondary.length === 0, "one audit is the lead");
+  expect(storyColumns(one).length === 1, "one story uses one column");
+
+  const four = [
+    ...sample(2, "caribbean", "CBI Program"),
+    ...sample(1, "caribbean", "RBI Program").map((item) => ({ ...item, id: "caribbean-rbi", featured: false })),
+    ...sample(1, "caribbean", "Investment Offering").map((item) => ({ ...item, id: "caribbean-offer", featured: false })),
+  ];
+  const fourGroups = groupedAudits(four, types);
+  expect(fourGroups.length === 3 && fourGroups.every((group) => group.stories.length > 0), "four audits keep each present type");
+  expect(splitAuditLead(four).secondary.length === 3, "four audits leave three in the rail");
+  expect(storyColumns(four).length === 3, "four stories use three columns");
+  expect(auditsInRegion(four, "caribbean").slice(0, 4).length === 4, "a region section keeps four");
+
+  const ten = sample(10);
+  const rows = storyRows(ten);
+  expect(rows.length === 2 && rows[0]?.length === 6 && rows[1]?.length === 4, "ten audits fill two rows");
+  expect(storyColumns(rows[0] ?? []).length === 4, "a full row uses four columns");
+  expect(storyColumns(rows[1] ?? []).length === 3, "the remainder uses the four-story columns");
+  expect(groupedAudits(ten, types, 4)[0]?.stories.length === 4, "a capped section stops at four");
+  expect(groupedAudits(ten, types)[0]?.stories.length === 10, "an uncapped type section keeps every audit");
+
+  const mixed = [
+    ...sample(2, "caribbean", "CBI Program"),
+    ...sample(2, "europe", "CBI Program").map((item, index) => ({ ...item, id: `europe-cbi-${index}` })),
+    ...sample(1, "europe", "RBI Program").map((item) => ({ ...item, id: "europe-rbi" })),
+    ...sample(1, "south-america", "Investment Offering").map((item) => ({ ...item, id: "south-offer" })),
+  ];
+  const related = relatedAudits(mixed[0], mixed);
+  expect(related[0]?.region === "caribbean", "more audits starts in the same region");
+  expect(related.filter((item) => item.region === "caribbean").length === 1, "same region comes before other regions");
+  expect(related[1]?.auditType === "CBI Program" && related[1]?.region === "europe", "same type follows the region");
+  expect(related.at(-1)?.id === "south-offer", "a different region and type is last");
 });
 
 check("machine-readable copies follow published records", () => {

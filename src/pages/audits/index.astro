@@ -1,0 +1,17 @@
+---
+import AuditIndex from "../../components/audits/AuditIndex.astro";
+import { auditIndex } from "../../data/audits";
+import { loadAudits } from "../../lib/load-audits";
+
+const stories = await loadAudits();
+---
+
+<AuditIndex
+  title={auditIndex.title}
+  h1={auditIndex.h1}
+  description={auditIndex.description}
+  stories={stories}
+  showGroups
+  showRegions
+  showRequest
+/>

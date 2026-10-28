@@ -59,6 +59,15 @@ const placeholders = [
   ["authors", "demonstration-editor-two", "md"],
   ["authors", "layout-preview-desk", "md"],
   ["authors", "layout-preview-editor", "md"],
+  ["audits", "design-preview-cbi-program", "md"],
+  ["audits", "design-preview-rbi-program", "md"],
+  ["audits", "design-preview-offering-one", "md"],
+  ["audits", "design-preview-cbi-second", "md"],
+  ["audits", "design-preview-rbi-second", "md"],
+  ["audits", "design-preview-offering-two", "md"],
+  ["audits", "design-preview-cbi-third", "md"],
+  ["audits", "design-preview-offering-three", "md"],
+  ["audits", "design-preview-rbi-third", "md"],
 ] as const;
 
 const byKey = new Map(

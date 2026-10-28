@@ -9,6 +9,7 @@ import {
   correctionSchema,
   countryInputSchema,
   newsInputSchema,
+  auditInputSchema,
   pressInputSchema,
   programInputSchema,
   reportInputSchema,
@@ -31,6 +32,7 @@ const collections = [
   { directory: "programs", schema: programInputSchema },
   { directory: "corrections", schema: correctionSchema },
   { directory: "press", schema: pressInputSchema },
+  { directory: "audits", schema: auditInputSchema },
 ] as const;
 
 export function splitFrontmatter(raw: string): { data: unknown; body: string } {
@@ -292,6 +294,12 @@ export function auditContentDirectory(root = process.cwd()): string[] {
       }
       const raw = readFileSync(file, "utf8");
       failures.push(...auditContentFile(relative, raw, collection.schema));
+      if (collection.directory === "audits") {
+        const parsed = collection.schema.safeParse(splitFrontmatter(raw).data);
+        if (parsed.success && (parsed.data as { slug?: string }).slug !== id) {
+          failures.push(`${relative}: slug does not match the file name`);
+        }
+      }
     }
   }
   failures.push(...auditPublishedRelations(root));

@@ -2,6 +2,7 @@ import { visibleInProduction, type ContentRecord } from "./content.ts";
 import {
   regions,
   regionLabels,
+  reservedAuditSlugs,
   type Region,
   type ResearchType,
 } from "./content-schema.ts";
@@ -52,6 +53,7 @@ const reservedSlugs: Record<string, readonly string[]> = {
   news: ["policy", "legislation", "regulation", "page"],
   reports: ["policy-analysis", "market-research", "country-research", "page"],
   press: ["page"],
+  audits: reservedAuditSlugs,
 };
 
 export type ArchiveStory = {

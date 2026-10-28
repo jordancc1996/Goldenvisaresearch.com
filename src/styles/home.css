@@ -312,6 +312,10 @@
     grid-column: span 8;
   }
 
+  .home-lead:not(:has(.home-rail)) .home-lead-main {
+    grid-column: 1 / -1;
+  }
+
   .home-rail {
     grid-column: span 4;
     margin-top: 0;

@@ -6,6 +6,7 @@ import {
   correctionSchema,
   createCountrySchema,
   createNewsSchema,
+  createAuditSchema,
   createPressSchema,
   createProgramSchema,
   createReportSchema,
@@ -48,9 +49,10 @@ function gateUnpublishedImages(schema: z.ZodType) {
       verification?: { status?: string };
       hero?: unknown;
       photo?: unknown;
+      heroImage?: unknown;
     };
     if (shouldResolveContentImage(record, omitPrivateContentImages())) return data;
-    return { ...record, hero: undefined, photo: undefined };
+    return { ...record, hero: undefined, photo: undefined, heroImage: undefined };
   });
 }
 
@@ -118,4 +120,12 @@ const corrections = defineCollection({
   schema: correctionSchema,
 });
 
-export const collections = { news, reports, programs, countries, authors, corrections, press };
+const audits = defineCollection({
+  loader: loader("audits"),
+  schema: ({ image }) => {
+    const parsed = createAuditSchema(image().optional());
+    return gateUnpublishedImages(parsed) as unknown as typeof parsed;
+  },
+});
+
+export const collections = { news, reports, programs, countries, authors, corrections, press, audits };

@@ -5,6 +5,8 @@ import { site } from "../data/site.ts";
 import { isArchiveEntry, newsArchiveCategories, researchArchiveTypes } from "./archive.ts";
 import { visibleAuthorInProduction, type ContentRecord } from "./content.ts";
 import {
+  auditInputSchema,
+  auditRegions,
   authorSchema,
   countryInputSchema,
   newsInputSchema,
@@ -21,6 +23,7 @@ const utilityPaths = new Set(["/thanks", "/foundation", "/404", "/search"]);
 const newsCategorySlugs = new Set<string>(newsArchiveCategories.map((item) => item.slug));
 const researchTypeSlugs = new Set<string>(researchArchiveTypes.map((item) => item.slug));
 const topicSlugSet = new Set<string>(topicSlugs);
+const auditRegionSet = new Set<string>(auditRegions);
 
 export type IndexRef = {
   id: string;
@@ -29,6 +32,8 @@ export type IndexRef = {
   researchType?: string;
   countryId?: string;
   countryIds: string[];
+  auditType?: string;
+  auditRegion?: string;
 };
 
 export type IndexInventory = {
@@ -38,6 +43,7 @@ export type IndexInventory = {
   countries: IndexRef[];
   authors: IndexRef[];
   press: IndexRef[];
+  audits: IndexRef[];
   newsletterConfigured: boolean;
   contactConfigured: boolean;
 };
@@ -74,6 +80,7 @@ export function indexInventory(partial: Partial<IndexInventory> = {}): IndexInve
     countries: partial.countries ?? [],
     authors: partial.authors ?? [],
     press: partial.press ?? [],
+    audits: partial.audits ?? [],
     newsletterConfigured: partial.newsletterConfigured ?? false,
     contactConfigured: partial.contactConfigured ?? false,
   };
@@ -158,6 +165,23 @@ export function sectionIndexable(pathname: string, inventory: IndexInventory): b
     const slug = path.slice("/authors/".length);
     return inventory.authors.some((item) => item.id === slug);
   }
+  if (path === "/audits") return inventory.audits.length > 0;
+  if (path === "/audits/methodology") return true;
+  if (path === "/audits/citizenship-by-investment") {
+    return inventory.audits.some((item) => item.auditType === "CBI Program");
+  }
+  if (path === "/audits/residency-by-investment") {
+    return inventory.audits.some((item) => item.auditType === "RBI Program");
+  }
+  if (path === "/audits/investment-offerings") {
+    return inventory.audits.some((item) => item.auditType === "Investment Offering");
+  }
+  if (path.startsWith("/audits/")) {
+    const slug = path.slice("/audits/".length);
+    if (!slug || slug.includes("/")) return false;
+    if (auditRegionSet.has(slug)) return inventory.audits.some((item) => item.auditRegion === slug);
+    return inventory.audits.some((item) => item.id === slug);
+  }
   if (path === "/press") return inventory.press.length > 0;
   if (path.startsWith("/press/")) {
     const slug = path.slice("/press/".length);
@@ -193,6 +217,9 @@ function toRef(id: string, data: Record<string, unknown>): IndexRef {
     researchType: typeof data.researchType === "string" ? data.researchType : undefined,
     countryId: typeof data.country === "string" ? data.country : undefined,
     countryIds: countries,
+    auditType: typeof data.auditType === "string" ? data.auditType : undefined,
+    auditRegion:
+      typeof data.auditType === "string" && typeof data.region === "string" ? data.region : undefined,
   };
 }
 
@@ -225,6 +252,7 @@ export function loadPublicationInventory(): IndexInventory {
     countries: publishedRefs("countries", countryInputSchema, "record"),
     authors: publishedRefs("authors", authorSchema, "author"),
     press: publishedRefs("press", pressInputSchema, "record"),
+    audits: publishedRefs("audits", auditInputSchema, "record"),
     newsletterConfigured: configured(site.forms.newsletter),
     contactConfigured: configured(site.forms.contact),
   });
