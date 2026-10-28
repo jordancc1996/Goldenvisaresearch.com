@@ -2,6 +2,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { parse as parseYaml } from "yaml";
 import type { z } from "astro/zod";
+import { auditRegionCoverageFailures } from "./audit-regions.ts";
 import { reservedArchiveSlug } from "./archive.ts";
 import { reviewNote, reviewState, reviewWindowDays } from "./article-display.ts";
 import {
@@ -303,6 +304,7 @@ export function auditContentDirectory(root = process.cwd()): string[] {
     }
   }
   failures.push(...auditPublishedRelations(root));
+  failures.push(...auditRegionCoverageFailures(root));
   return failures;
 }
 

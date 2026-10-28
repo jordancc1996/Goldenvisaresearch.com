@@ -64,6 +64,7 @@ import {
   newsInputSchema,
   programInputSchema,
 } from "../src/lib/content-schema.ts";
+import { auditRegionCoverageFailures, auditRegionGaps } from "../src/lib/audit-regions.ts";
 import { durationLabel, embedUrl } from "../src/lib/audit-video.ts";
 import { buildCoverage } from "../src/lib/article-coverage.ts";
 import { newsletterInsertIndex } from "../src/lib/newsletter-markup.ts";
@@ -1009,6 +1010,23 @@ check("indexing follows the records a route displays", () => {
   expect(links.length === 1 && links[0]?.href === "/news/note", "supporting links omit missing and unpublished records");
   expect(!sectionIndexable("/llms.txt", empty) && !sectionIndexable("/content-index.json", empty), "machine files stay out of the index");
   expect(!sectionIndexable("/content/news/policy-note.md", relevant), "markdown copy stays out of the index");
+});
+
+check("every audit region has a page record, a static page, and a keyword", () => {
+  const failures = auditRegionCoverageFailures();
+  expect(failures.length === 0, failures.join("\n"));
+  const gaps = auditRegionGaps({
+    regions: ["middle-east"],
+    pages: [],
+    pageFiles: new Set(),
+    pageSources: new Map(),
+    keywordPaths: new Map(),
+    dynamicRoute: true,
+  });
+  expect(gaps.some((gap) => gap.includes("[region].astro")), gaps.join("\n"));
+  expect(gaps.some((gap) => gap.includes("auditRegionPages")), gaps.join("\n"));
+  expect(gaps.some((gap) => gap.includes("middle-east.astro")), gaps.join("\n"));
+  expect(gaps.some((gap) => gap.includes("keyword")), gaps.join("\n"));
 });
 
 check("audit region pages group 0, 1, 4, and 10 records", () => {

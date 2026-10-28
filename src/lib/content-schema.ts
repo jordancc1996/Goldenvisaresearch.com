@@ -397,8 +397,9 @@ export const pressInputSchema = createPressSchema({
 });
 
 /**
- * Regions an audit can name. Add a value and a label here, then add a page
- * in auditRegionPages, when a new region should have its own route.
+ * Regions an audit can name. Add a value and a label here, then an
+ * auditRegionPages entry, a static src/pages/audits/<region>.astro file that
+ * renders AuditRegionPage, and a keyword entry. Do not add [region].astro.
  * Later values can include middle-east, asia-pacific, and north-america.
  */
 export const auditRegions = ["caribbean", "europe", "south-america"] as const;
