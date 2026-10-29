@@ -1,0 +1,45 @@
+---
+import { auditFilters, auditRegionPages } from "../../data/audits";
+
+const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/+$/, "") || "/";
+---
+
+<nav class="audit-filters" aria-label="Audit types">
+  <ul>
+    {
+      auditFilters.map((item, index) => (
+        <li>
+          {index > 0 && (
+            <span class="audit-filter-mark" aria-hidden="true">
+              ·
+            </span>
+          )}
+          <a href={item.href} aria-current={path === item.href ? "page" : undefined}>
+            {item.label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+<nav class="audit-filters audit-regions" aria-label="Audit regions">
+  <ul>
+    <li>
+      <span class="audit-filter-label">By region:</span>
+    </li>
+    {
+      auditRegionPages.map((item, index) => (
+        <li>
+          {index > 0 && (
+            <span class="audit-filter-mark" aria-hidden="true">
+              ·
+            </span>
+          )}
+          <a href={item.path} aria-current={path === item.path ? "page" : undefined}>
+            {item.label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>

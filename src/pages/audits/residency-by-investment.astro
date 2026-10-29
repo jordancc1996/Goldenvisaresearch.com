@@ -1,0 +1,10 @@
+---
+import AuditIndex from "../../components/audits/AuditIndex.astro";
+import { auditTypePages } from "../../data/audits";
+import { auditsOfType, loadAudits } from "../../lib/load-audits";
+
+const page = auditTypePages[1];
+const stories = auditsOfType(await loadAudits(), page.auditType);
+---
+
+<AuditIndex title={page.title} h1={page.h1} description={page.description} stories={stories} />

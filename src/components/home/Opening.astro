@@ -6,9 +6,11 @@ import type { HomeStory } from "../../lib/load-archive";
 interface Props {
   lead?: HomeStory;
   secondary: HomeStory[];
+  titleLevel?: 1 | 2;
 }
 
-const { lead, secondary } = Astro.props;
+const { lead, secondary, titleLevel = 1 } = Astro.props;
+const LeadTitle = titleLevel === 2 ? "h2" : "h1";
 ---
 
 <section class="home-section home-opening shell-wrap" aria-labelledby={lead ? "lead-title" : "news-empty-title"}>
@@ -17,15 +19,19 @@ const { lead, secondary } = Astro.props;
       {
         lead ? (
           <article>
-            <p class="type-kicker">{lead.categoryLabel}</p>
-            <h1 id="lead-title" class="home-lead-title">
+            <p class="type-kicker">
+              {lead.categoryLabel}
+              {lead.video && <span class="audit-video-mark">Video</span>}
+            </p>
+            <LeadTitle id="lead-title" class="home-lead-title">
               <a href={lead.href}>{lead.title}</a>
-            </h1>
+            </LeadTitle>
             <p class="home-dek">{lead.summary}</p>
-            <StoryMeta publishedAt={lead.publishedAt} updatedAt={lead.updatedAt} plain />
+            <StoryMeta publishedAt={lead.publishedAt} updatedAt={lead.updatedAt} duration={lead.video?.durationLabel} plain />
             {lead.hero && (
               <HomeFigure
                 hero={lead.hero}
+                video={Boolean(lead.video)}
                 priority
                 sizes="(min-width: 1024px) 760px, calc(100vw - 40px)"
               />
@@ -45,11 +51,22 @@ const { lead, secondary } = Astro.props;
           {secondary.map((story) => (
             <li>
               <article>
-                <p class="type-kicker">{story.categoryLabel}</p>
-                <h2 class="home-rail-title">
-                  <a href={story.href}>{story.title}</a>
-                </h2>
-                <StoryMeta publishedAt={story.publishedAt} plain />
+                <p class="type-kicker">
+                  {story.categoryLabel}
+                  {story.video && <span class="audit-video-mark">Video</span>}
+                </p>
+                {
+                  titleLevel === 2 ? (
+                    <p class="home-rail-title">
+                      <a href={story.href}>{story.title}</a>
+                    </p>
+                  ) : (
+                    <h2 class="home-rail-title">
+                      <a href={story.href}>{story.title}</a>
+                    </h2>
+                  )
+                }
+                <StoryMeta publishedAt={story.publishedAt} duration={story.video?.durationLabel} plain />
               </article>
             </li>
           ))}

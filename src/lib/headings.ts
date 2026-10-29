@@ -25,6 +25,7 @@ export const properNames = [
   "Golden Visa",
   "Asia-Pacific",
   "Middle East",
+  "South America",
   "Source Serif 4",
   "Formspree",
   "LinkedIn",

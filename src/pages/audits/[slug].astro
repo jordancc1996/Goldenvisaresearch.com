@@ -1,0 +1,17 @@
+---
+import AuditArticle from "../../components/audits/AuditArticle.astro";
+import { auditPaths, loadAuditPage } from "../../lib/load-audits";
+
+export async function getStaticPaths() {
+  return auditPaths();
+}
+
+const slug = Astro.params.slug;
+if (!slug) throw new Error("Missing audit slug");
+const page = await loadAuditPage(slug);
+const { Content } = page;
+---
+
+<AuditArticle audit={page.audit} headings={page.headings} related={page.related}>
+  <Content />
+</AuditArticle>

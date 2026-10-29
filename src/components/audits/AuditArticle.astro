@@ -1,0 +1,156 @@
+---
+import EditionHeading from "../home/EditionHeading.astro";
+import StoryGrid from "../home/StoryGrid.astro";
+import Figure from "../article/Figure.astro";
+import Sources from "../article/Sources.astro";
+import AuditPhases from "./AuditPhases.astro";
+import AuditSections from "./AuditSections.astro";
+import AuditTranscript from "./AuditTranscript.astro";
+import AuditVideo from "./AuditVideo.astro";
+import { formatArticleDate, isoDate } from "../../lib/article-display";
+import { canonicalUrl, site } from "../../data/site";
+import { constructionMode } from "../../lib/preview-mode";
+import { embedUrl } from "../../lib/audit-video";
+import { auditDocumentTitle, storyRows, type AuditCard } from "../../lib/load-audits";
+import { auditArticleSchema, auditVideoObject, jsonLd } from "../../lib/metadata";
+import { placeholderPageNote } from "../../lib/placeholder-marks";
+import { placeholderNotice } from "../../lib/preview-mode";
+import type { TocHeading } from "../../lib/load-article";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/article.css";
+import "../../styles/edition.css";
+import "../../styles/home.css";
+import "../../styles/audits.css";
+
+interface Props {
+  audit: AuditCard;
+  headings: TocHeading[];
+  related: AuditCard[];
+}
+
+const { audit, headings, related } = Astro.props;
+const title = auditDocumentTitle(audit.subjectName, audit.verdict);
+const canonical = canonicalUrl(Astro.url.pathname);
+const schema =
+  audit.indexable && canonical && site.origin
+    ? auditArticleSchema({
+        headline: audit.title,
+        description: audit.summary,
+        canonical,
+        publishedAt: audit.publishedAt,
+        modifiedAt: audit.lastVerifiedDate,
+        origin: site.origin,
+      })
+    : null;
+const videoSchema =
+  audit.video && audit.indexable && canonical && site.origin && audit.video.uploadDate && audit.video.duration
+    ? auditVideoObject({
+        origin: site.origin,
+        name: audit.video.title,
+        description: audit.video.description,
+        thumbnailUrl: new URL(audit.video.thumbnail.src, site.origin).href,
+        uploadDate: audit.video.uploadDate,
+        duration: audit.video.duration,
+        embedUrl: embedUrl(audit.video.provider, audit.video.id),
+        chapters: audit.video.chapters.map((chapter) => ({
+          name: chapter.label,
+          startOffset: chapter.seconds,
+          url: embedUrl(audit.video!.provider, audit.video!.id, chapter.seconds),
+        })),
+      })
+    : null;
+const schemaJson = jsonLd(schema);
+const videoSchemaJson = jsonLd(videoSchema);
+const rows = storyRows(related);
+---
+
+<BaseLayout
+  title={title}
+  description={audit.summary}
+  noindex={!audit.indexable}
+  kind="article"
+  publishedAt={audit.publishedAt}
+  updatedAt={audit.lastVerifiedDate}
+  indexed={audit.indexable}
+>
+  {schemaJson && <script is:inline type="application/ld+json" set:html={schemaJson} />}
+  {videoSchemaJson && <script is:inline type="application/ld+json" set:html={videoSchemaJson} />}
+  <article class="editorial shell-wrap">
+    <div class="editorial-frame">
+      {
+        audit.demonstration && (
+          <p class="design-notice">
+            {placeholderPageNote("audits", audit.id, placeholderNotice)}
+          </p>
+        )
+      }
+      <header class="editorial-header">
+        <ul class="editorial-meta audit-meta">
+          <li class="editorial-category">
+            <span>{audit.categoryLabel}</span>
+            <span class="audit-meta-mark" aria-hidden="true">·</span>
+            <a href={audit.regionHref}>{audit.regionLabel}</a>
+          </li>
+          <li>
+            <time datetime={isoDate(audit.publishedAt)}>{formatArticleDate(audit.publishedAt)}</time>
+          </li>
+          <li>
+            Last verified <time datetime={isoDate(audit.lastVerifiedDate)}>{formatArticleDate(audit.lastVerifiedDate)}</time>
+          </li>
+        </ul>
+        <h1 class="editorial-title">{audit.title}</h1>
+        <p class="editorial-dek">{audit.summary}</p>
+        {audit.reviewedBy && <p class="editorial-byline">{audit.reviewedBy}</p>}
+      </header>
+      <div class="editorial-layout">
+        <div class="editorial-main" data-pagefind-body={audit.indexable ? true : undefined}>
+          <hr class="editorial-rule" />
+          {
+            audit.video ? (
+              <AuditVideo video={audit.video} allowEmbed={!constructionMode()} />
+            ) : (
+              audit.hero && (
+                <Figure
+                  src={audit.hero.src}
+                  alt={audit.hero.alt}
+                  caption={audit.hero.caption}
+                  credit={audit.hero.credit}
+                  focal={audit.hero.focal}
+                  sizes="(min-width: 768px) 680px, calc(100vw - 48px)"
+                  priority
+                />
+              )
+            )
+          }
+          <div class="audit-verdict">
+            <p class="type-kicker">The verdict</p>
+            <p>{audit.verdict}</p>
+          </div>
+          <AuditSections headings={headings} />
+          <div class="article-body">
+            <slot />
+          </div>
+          <AuditPhases />
+          {audit.video && audit.video.transcript.length > 0 && <AuditTranscript lines={audit.video.transcript} />}
+          <Sources sources={audit.sources} />
+          <p class="article-notice">
+            This audit is independent research, not legal, tax or financial advice. Facts were verified on the date shown and may change.
+          </p>
+          <p class="article-notice">
+            <a href="/contact">Request an audit</a> of a program or an offering.
+          </p>
+        </div>
+      </div>
+    </div>
+  </article>
+  {
+    rows.length > 0 && (
+      <section class="home-section shell-wrap" aria-labelledby="more-audits-title">
+        <EditionHeading title="More audits" labelledby="more-audits-title" href="/audits" />
+        {rows.map((row) => (
+          <StoryGrid stories={row} />
+        ))}
+      </section>
+    )
+  }
+</BaseLayout>

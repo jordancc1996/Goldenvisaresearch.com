@@ -1,0 +1,25 @@
+---
+import AuditIndex from "./AuditIndex.astro";
+import { auditRegionPages } from "../../data/audits";
+import type { AuditRegion } from "../../lib/content-schema";
+import { auditsInRegion, loadAudits } from "../../lib/load-audits";
+
+interface Props {
+  region: AuditRegion;
+}
+
+const { region } = Astro.props;
+const page = auditRegionPages.find((item) => item.region === region);
+if (!page) throw new Error(`No audit region page is recorded for ${region}.`);
+const stories = auditsInRegion(await loadAudits(), page.region);
+---
+
+<AuditIndex
+  title={page.title}
+  h1={page.h1}
+  description={page.description}
+  stories={stories}
+  showTypes
+  showRequest
+  showAll={false}
+/>

@@ -11,10 +11,12 @@ import {
 import { extractHeadings, headingIssues, titleCase } from "../src/lib/headings.ts";
 import { brokenInternalLinks, exactAnchorCounts, internalPath, orphanPaths, trailingSlashLinks, type LinkRef } from "../src/lib/links.ts";
 import { routeIndexable } from "../src/lib/indexability.ts";
+import { sitemapVideoFromAudit } from "../src/lib/audit-sitemap.ts";
 import { constructionModeFromValue, constructionNotice } from "../src/lib/preview-mode.ts";
 import {
   allowInSitemap,
   articleSchema,
+  auditVideoObject,
   personSchema,
   privatePaths,
   publicationGraph,
@@ -53,6 +55,7 @@ check("construction mode stays on until the launch switch", () => {
 
 function constructionContentRoute(route: string): boolean {
   if (/^\/(?:news|reports|programs|countries|authors|press)\/[^/]+$/.test(route)) return true;
+  if (/^\/audits\/[^/]+$/.test(route)) return true;
   return /^\/(?:news|reports)\/(?:page\/\d+|[^/]+\/page\/\d+)$/.test(route);
 }
 
@@ -68,6 +71,14 @@ check("sitemap and news window exclude private and stale urls", () => {
   expect(allowInSitemap("https://example.com/"), "home");
   expect(allowInSitemap("https://example.com/corrections"), "corrections");
   expect(!allowInSitemap("https://example.com/news"), "empty news");
+  expect(!allowInSitemap("https://example.com/audits"), "empty audits");
+  expect(!allowInSitemap("https://example.com/audits/citizenship-by-investment"), "empty citizenship audits");
+  expect(!allowInSitemap("https://example.com/audits/residency-by-investment"), "empty residency audits");
+  expect(!allowInSitemap("https://example.com/audits/investment-offerings"), "empty offering audits");
+  expect(!allowInSitemap("https://example.com/audits/caribbean"), "empty caribbean audits");
+  expect(!allowInSitemap("https://example.com/audits/europe"), "empty europe audits");
+  expect(!allowInSitemap("https://example.com/audits/south-america"), "empty south america audits");
+  expect(!allowInSitemap("https://example.com/audits/design-preview-cbi-program"), "draft audit");
   expect(!allowInSitemap("https://example.com/reports/policy-analysis"), "empty report type");
   expect(!allowInSitemap("https://example.com/countries"), "empty countries");
   expect(!allowInSitemap("https://example.com/programs"), "empty programs");
@@ -142,6 +153,68 @@ check("schema uses documented identity only", () => {
     url: "https://example.com/countries/portugal",
   });
   expect(page["@type"] === "WebPage", "country page");
+  const hiddenVideo = auditVideoObject({
+    origin: null,
+    name: "A recorded video",
+    description: "A recorded description.",
+    thumbnailUrl: "https://example.com/still.webp",
+    uploadDate: new Date("2026-10-31T00:00:00Z"),
+    duration: "PT18M30S",
+    embedUrl: "https://www.youtube-nocookie.com/embed/placeholder-id",
+    chapters: [],
+  });
+  expect(hiddenVideo === null, "video schema needs an origin");
+  const publishedVideo = auditVideoObject({
+    origin: "https://example.com",
+    name: "A recorded video",
+    description: "A recorded description.",
+    thumbnailUrl: "https://example.com/still.webp",
+    uploadDate: new Date("2026-10-31T00:00:00Z"),
+    duration: "PT18M30S",
+    embedUrl: "https://www.youtube-nocookie.com/embed/placeholder-id?rel=0",
+    chapters: [{ name: "Opening lines", startOffset: 0, url: "https://www.youtube-nocookie.com/embed/placeholder-id?start=0" }],
+  });
+  const videoText = JSON.stringify(publishedVideo);
+  expect(publishedVideo?.["@type"] === "VideoObject", "video object");
+  expect(videoText.includes("PT18M30S") && videoText.includes("thumbnailUrl") && videoText.includes("Clip"), videoText);
+  expect(!videoText.includes("BreadcrumbList"), "video schema has no breadcrumb");
+  const recorded = {
+    provider: "youtube" as const,
+    id: "placeholder-id",
+    title: "A recorded video",
+    description: "A recorded description.",
+    duration: "PT18M30S",
+    uploadDate: "2026-10-31",
+  };
+  expect(
+    sitemapVideoFromAudit(
+      { draft: true, material: "demonstration", verification: { status: "unverified" }, video: recorded },
+      "https://example.com/audits/note",
+      "https://example.com/still.webp",
+    ) === undefined,
+    "draft video stays out of the sitemap",
+  );
+  const listed = sitemapVideoFromAudit(
+    {
+      draft: false,
+      material: "reported",
+      comparison: false,
+      verification: { status: "verified" },
+      video: recorded,
+    },
+    "https://example.com/audits/note",
+    "https://example.com/still.webp",
+  );
+  expect(listed?.thumbnail_loc === "https://example.com/still.webp", "sitemap still");
+  expect(listed?.player_loc.includes("youtube-nocookie.com") === true && listed.duration === 1110, "sitemap player");
+  expect(
+    sitemapVideoFromAudit(
+      { draft: false, material: "reported", comparison: false, verification: { status: "verified" }, video: recorded },
+      "https://example.com/audits/note",
+      undefined,
+    ) === undefined,
+    "sitemap video needs a still",
+  );
 });
 
 check("heading validator reports case, count, and hierarchy", () => {
@@ -246,10 +319,20 @@ check("built pages match metadata, headings, links, and images", () => {
       "market-research",
       "country-research",
     ]);
+    const auditReserve = new Set([
+      "citizenship-by-investment",
+      "residency-by-investment",
+      "investment-offerings",
+      "methodology",
+      "caribbean",
+      "europe",
+      "south-america",
+    ]);
     const story =
       parts.length === 2 &&
-      ["news", "reports", "programs", "countries", "authors"].includes(parts[0]) &&
-      !archiveSlug.has(parts[1]);
+      ((["news", "reports", "programs", "countries", "authors"].includes(parts[0]) &&
+        !archiveSlug.has(parts[1])) ||
+        (parts[0] === "audits" && !auditReserve.has(parts[1])));
     if (!story) {
       expect(page.html.includes('data-pagefind-ignore="all"'), `${page.route} is outside the search index`);
     }
@@ -295,7 +378,7 @@ check("built pages match metadata, headings, links, and images", () => {
       expect(/\bwidth="\d+"/.test(tag) && /\bheight="\d+"/.test(tag), `${page.route} dimensions`);
       expect(/\.webp/.test(tag) || /\.svg/.test(tag), `${page.route} image format`);
     }
-    const title = page.html.match(/<title>([^<]*)<\/title>/)?.[1] ?? "";
+    const title = strip(page.html.match(/<title>([^<]*)<\/title>/)?.[1] ?? "");
     const description = page.html.match(/<meta name="description" content="([^"]*)"/)?.[1] ?? "";
     const visible = `${title} ${description} ${headings.map((heading) => heading.text).join(" ")}`;
     expect(!comparisonPatterns.some((pattern) => pattern.test(visible)), `${page.route} comparison query`);
