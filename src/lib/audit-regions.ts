@@ -19,6 +19,14 @@ export type AuditRegionCoverage = {
  */
 export function auditRegionGaps(coverage: AuditRegionCoverage): string[] {
   const failures: string[] = [];
+  const seenRegions = new Set<string>();
+  const seenPaths = new Set<string>();
+  for (const page of coverage.pages) {
+    if (seenRegions.has(page.region)) failures.push(`${page.region}: auditRegionPages repeats this region`);
+    else seenRegions.add(page.region);
+    if (seenPaths.has(page.path)) failures.push(`${page.path}: auditRegionPages repeats this path`);
+    else seenPaths.add(page.path);
+  }
   if (coverage.dynamicRoute) {
     failures.push("src/pages/audits/[region].astro competes with [slug].astro. Use a static file for each region.");
   }

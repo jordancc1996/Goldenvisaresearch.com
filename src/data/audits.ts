@@ -1,3 +1,4 @@
+import type { AuditRegion } from "../lib/content-schema.ts";
 import { site } from "./site.ts";
 
 export const auditIndex = {
@@ -85,6 +86,12 @@ export const auditRegionPages = [
       "South American program audits list independent reviews of residency and citizenship programs and offerings in South America.",
   },
 ] as const;
+
+export function auditRegionPage(region: AuditRegion) {
+  const page = auditRegionPages.find((item) => item.region === region);
+  if (!page) throw new Error(`No audit region page is recorded for ${region}.`);
+  return page;
+}
 
 export const auditFilters = [
   { href: auditIndex.path, label: "All" },

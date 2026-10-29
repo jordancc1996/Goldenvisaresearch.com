@@ -1,4 +1,5 @@
-import { auditIndex, auditMethodology, auditRegionPages, auditTypePages } from "./audits.ts";
+import { auditRegions, type AuditRegion } from "../lib/content-schema.ts";
+import { auditIndex, auditMethodology, auditRegionPage, auditRegionPages, auditTypePages } from "./audits.ts";
 
 export type KeywordLocation = "h1" | "title" | "description" | "slug" | "intro";
 
@@ -17,6 +18,61 @@ export type KeywordPage = {
 };
 
 export const comparisonPatterns = [/\bbest\b/i, /\bcheapest\b/i, /\bversus\b/i, /\bvs\.?\b/i];
+
+const regionKeywordCopy: Record<AuditRegion, { keyword: string; exceptions: KeywordException[] }> = {
+  caribbean: {
+    keyword: "caribbean program audits",
+    exceptions: [
+      {
+        location: "h1",
+        proposed: "The H1 names investment migration audits. The title keyword stays program audits.",
+      },
+      {
+        location: "slug",
+        proposed: "The route is /audits/caribbean. The words program audits stay in the title.",
+      },
+    ],
+  },
+  europe: {
+    keyword: "european program audits",
+    exceptions: [
+      {
+        location: "h1",
+        proposed: "The H1 names investment migration audits. The title keyword stays program audits.",
+      },
+      {
+        location: "slug",
+        proposed: "The route is /audits/europe. European is the title form of that region.",
+      },
+    ],
+  },
+  "south-america": {
+    keyword: "south american program audits",
+    exceptions: [
+      {
+        location: "h1",
+        proposed: "The H1 names investment migration audits. The title keyword stays program audits.",
+      },
+      {
+        location: "slug",
+        proposed: "The route is /audits/south-america. South American is the title form of that region.",
+      },
+    ],
+  },
+};
+
+function regionKeywordPage(region: AuditRegion): KeywordPage {
+  const page = auditRegionPage(region);
+  const copy = regionKeywordCopy[region];
+  return {
+    path: page.path,
+    keyword: copy.keyword,
+    intent: "informational",
+    h1: page.h1,
+    description: page.description,
+    exceptions: copy.exceptions,
+  };
+}
 
 export const keywordPages: KeywordPage[] = [
   {
@@ -352,57 +408,7 @@ export const keywordPages: KeywordPage[] = [
     description: auditMethodology.description,
     exceptions: [],
   },
-  {
-    path: auditRegionPages[0].path,
-    keyword: "caribbean program audits",
-    intent: "informational",
-    h1: auditRegionPages[0].h1,
-    description: auditRegionPages[0].description,
-    exceptions: [
-      {
-        location: "h1",
-        proposed: "The H1 names investment migration audits. The title keyword stays program audits.",
-      },
-      {
-        location: "slug",
-        proposed: "The route is /audits/caribbean. The words program audits stay in the title.",
-      },
-    ],
-  },
-  {
-    path: auditRegionPages[1].path,
-    keyword: "european program audits",
-    intent: "informational",
-    h1: auditRegionPages[1].h1,
-    description: auditRegionPages[1].description,
-    exceptions: [
-      {
-        location: "h1",
-        proposed: "The H1 names investment migration audits. The title keyword stays program audits.",
-      },
-      {
-        location: "slug",
-        proposed: "The route is /audits/europe. European is the title form of that region.",
-      },
-    ],
-  },
-  {
-    path: auditRegionPages[2].path,
-    keyword: "south american program audits",
-    intent: "informational",
-    h1: auditRegionPages[2].h1,
-    description: auditRegionPages[2].description,
-    exceptions: [
-      {
-        location: "h1",
-        proposed: "The H1 names investment migration audits. The title keyword stays program audits.",
-      },
-      {
-        location: "slug",
-        proposed: "The route is /audits/south-america. South American is the title form of that region.",
-      },
-    ],
-  },
+  ...auditRegions.map((region) => regionKeywordPage(region)),
 ];
 
 const auditTitles = new Map<string, string>([
@@ -410,9 +416,7 @@ const auditTitles = new Map<string, string>([
   [auditTypePages[0].path, auditTypePages[0].title],
   [auditTypePages[1].path, auditTypePages[1].title],
   [auditTypePages[2].path, auditTypePages[2].title],
-  [auditRegionPages[0].path, auditRegionPages[0].title],
-  [auditRegionPages[1].path, auditRegionPages[1].title],
-  [auditRegionPages[2].path, auditRegionPages[2].title],
+  ...auditRegionPages.map((page) => [page.path, page.title] as const),
 ]);
 
 export function expectedTitle(page: KeywordPage): string {

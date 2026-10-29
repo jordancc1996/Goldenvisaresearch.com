@@ -1027,6 +1027,20 @@ check("every audit region has a page record, a static page, and a keyword", () =
   expect(gaps.some((gap) => gap.includes("auditRegionPages")), gaps.join("\n"));
   expect(gaps.some((gap) => gap.includes("middle-east.astro")), gaps.join("\n"));
   expect(gaps.some((gap) => gap.includes("keyword")), gaps.join("\n"));
+  const duplicates = auditRegionGaps({
+    regions: [],
+    pages: [
+      { region: "caribbean", path: "/audits/caribbean", title: "Caribbean" },
+      { region: "caribbean", path: "/audits/europe", title: "Repeated region" },
+      { region: "europe", path: "/audits/caribbean", title: "Repeated path" },
+    ],
+    pageFiles: new Set(),
+    pageSources: new Map(),
+    keywordPaths: new Map(),
+    dynamicRoute: false,
+  });
+  expect(duplicates.some((gap) => gap.includes("repeats this region")), duplicates.join("\n"));
+  expect(duplicates.some((gap) => gap.includes("repeats this path")), duplicates.join("\n"));
 });
 
 check("audit region pages group 0, 1, 4, and 10 records", () => {
