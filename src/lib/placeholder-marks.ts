@@ -4,6 +4,7 @@
  * 12-32 continue down the homepage topic and research sections.
  * 33-53 are the remaining records. They have pages and appear in the archives.
  * The number stays on the kicker. The page names the file to replace.
+ * italy-retired-slot holds the old Italy placeholder number so later marks stay put.
  */
 const placeholders = [
   ["news", "design-preview-lead", "md"],
@@ -51,7 +52,7 @@ const placeholders = [
   ["programs", "demonstration-program-guide", "md"],
   ["programs", "demonstration-spain-route", "md"],
   ["countries", "greece", "md"],
-  ["countries", "italy", "md"],
+  ["countries", "italy-retired-slot", "md"],
   ["countries", "portugal", "md"],
   ["countries", "spain", "md"],
   ["press", "layout-preview-release", "md"],

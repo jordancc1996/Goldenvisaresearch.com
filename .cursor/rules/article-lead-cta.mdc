@@ -1,0 +1,18 @@
+---
+description: Article inquiry form required on every Golden Visa Research article
+alwaysApply: true
+---
+
+# Article inquiry form
+
+Every news article, research report, program article, and press release includes one inquiry form. The article pipeline in `src/plugins/article-newsletter.ts` inserts the markup from `src/lib/inquiry-markup.ts`. `ArticleLeadCTA` renders that same form. Do not paste the form into a Markdown or MDX file.
+
+The approved layout is the card in `public/references/article-cta-reference.png`. The submit control says "Explore Your Options". It uses the reference Subscribe button: forest green `#243C38`, white text, 3px corners, and a slightly lighter green hover (`#304E48`). Do not restyle that button or restore the in-article newsletter module.
+
+The form has three required fields: email address, LinkedIn profile URL, and one program. Program labels live in `src/data/inquiry-programs.ts`. Add or remove a program there. Do not copy the list into an article.
+
+Preselect the program from `inquiryProgram` when the article sets it. Otherwise use the single country on the record. Portugal maps to two programs, so it stays on Other / Not Sure Yet unless `inquiryProgram` is set. More than one country, a comparison, or a general item also stays on Other / Not Sure Yet. The reader can change the selection.
+
+Place the form after the third top-level paragraph when the article has at least six paragraphs. Place it at the end of the body when the article is shorter. Do not put it inside a list, table, quotation, or figure. One form per article.
+
+Submitting the form does not add the address to a newsletter list. Do not show "Thank you for your interest. Your inquiry has been received." unless `INQUIRY_FORM_ENDPOINT` is an approved https URL and that endpoint returns a successful JSON response. Do not invent an endpoint or store inquiry fields in the repository.

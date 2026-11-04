@@ -1,4 +1,5 @@
 import { z } from "astro/zod";
+import { inquiryProgramIds } from "../data/inquiry-programs.ts";
 import { clockSeconds, durationSeconds, videoProviders } from "./audit-video.ts";
 
 export { videoProviders };
@@ -177,6 +178,7 @@ const editorialFields = {
   hero: heroSchema.optional(),
   newsletter: z.boolean().default(true),
   newsletterAfter: z.number().int().positive().optional(),
+  inquiryProgram: z.enum(inquiryProgramIds).optional(),
 };
 
 export function createNewsSchema<
@@ -277,6 +279,7 @@ export function createProgramSchema<
     hero: heroSchema.optional(),
     newsletter: z.boolean().default(true),
     newsletterAfter: z.number().int().positive().optional(),
+    inquiryProgram: z.enum(inquiryProgramIds).optional(),
     relatedNews: z.array(refs.news).default([]),
     relatedReports: z.array(refs.report).default([]),
   });
@@ -314,6 +317,7 @@ export function createPressSchema<
     hero: heroSchema.optional(),
     newsletter: z.boolean().default(true),
     newsletterAfter: z.number().int().positive().optional(),
+    inquiryProgram: z.enum(inquiryProgramIds).optional(),
     relatedNews: z.array(refs.news).default([]),
     relatedReports: z.array(refs.report).default([]),
   });

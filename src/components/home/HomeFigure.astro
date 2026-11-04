@@ -5,16 +5,19 @@ import { isImageMetadata } from "../../lib/image-metadata";
 
 interface Props {
   hero: ArticleHero;
+  href: string;
+  label: string;
   video?: boolean;
   priority?: boolean;
   sizes: string;
 }
 
-const { hero, video = false, priority = false, sizes } = Astro.props;
+const { hero, href, label, video = false, priority = false, sizes } = Astro.props;
 const image = isImageMetadata(hero.src) ? hero.src : undefined;
 ---
 
 <figure class="home-figure" style={`--focal: ${hero.focal ?? "50% 50%"}`}>
+  <a class="home-figure-link" href={href} aria-label={label}>
   <div class="home-figure-frame">
     {
       image && (
@@ -32,6 +35,7 @@ const image = isImageMetadata(hero.src) ? hero.src : undefined;
     }
     {video && <span class="audit-play" aria-hidden="true" />}
   </div>
+  </a>
   <figcaption>
     <span>{hero.caption}</span>
     <span>{hero.credit}</span>

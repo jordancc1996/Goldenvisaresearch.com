@@ -70,7 +70,12 @@ check("sitemap and news window exclude private and stale urls", () => {
   expect(allowInSitemap("https://example.com/about"), "about");
   expect(allowInSitemap("https://example.com/"), "home");
   expect(allowInSitemap("https://example.com/corrections"), "corrections");
-  expect(!allowInSitemap("https://example.com/news"), "empty news");
+  expect(allowInSitemap("https://example.com/news"), "published news archive");
+  expect(allowInSitemap("https://example.com/news/italy-investor-demand"), "published article");
+  expect(allowInSitemap("https://example.com/countries"), "published country archive");
+  expect(allowInSitemap("https://example.com/countries/italy"), "published country");
+  expect(allowInSitemap("https://example.com/topics/residency-by-investment"), "topic with coverage");
+  expect(!allowInSitemap("https://example.com/news/policy"), "empty news category");
   expect(!allowInSitemap("https://example.com/audits"), "empty audits");
   expect(!allowInSitemap("https://example.com/audits/citizenship-by-investment"), "empty citizenship audits");
   expect(!allowInSitemap("https://example.com/audits/residency-by-investment"), "empty residency audits");
@@ -80,7 +85,6 @@ check("sitemap and news window exclude private and stale urls", () => {
   expect(!allowInSitemap("https://example.com/audits/south-america"), "empty south america audits");
   expect(!allowInSitemap("https://example.com/audits/design-preview-cbi-program"), "draft audit");
   expect(!allowInSitemap("https://example.com/reports/policy-analysis"), "empty report type");
-  expect(!allowInSitemap("https://example.com/countries"), "empty countries");
   expect(!allowInSitemap("https://example.com/programs"), "empty programs");
   expect(!allowInSitemap("https://example.com/tracker"), "empty tracker");
   expect(!allowInSitemap("https://example.com/topics/golden-visa"), "empty topic");
@@ -300,6 +304,17 @@ check("built pages match metadata, headings, links, and images", () => {
   }));
   const routes = new Set(pages.map((page) => page.route));
   const links: LinkRef[] = [];
+  const storyHeadlines = new Set<string>();
+  for (const page of pages) {
+    const parts = page.route.split("/").filter(Boolean);
+    const storyTitle =
+      parts.length === 2 &&
+      ["news", "reports", "programs", "press"].includes(parts[0]);
+    if (!storyTitle) continue;
+    for (const heading of extractHeadings(page.html)) {
+      if (heading.level === 1) storyHeadlines.add(heading.text);
+    }
+  }
   const privateRoutes = new Set<string>(privatePaths);
   const home = pages.find((page) => page.route === "/");
   const construction = home?.html.includes(constructionNotice) === true;
@@ -339,9 +354,10 @@ check("built pages match metadata, headings, links, and images", () => {
     if (page.route === "/countries") expect(!page.html.includes("0 countries"), "country count");
     if (!construction && page.route === "/news") expect(!page.html.includes("Twenty stories"), "news page size");
     if (!construction && page.route === "/reports") expect(!page.html.includes("Twenty reports"), "research page size");
-    const preserved = story
-      ? headings.filter((heading) => heading.level === 1).map((heading) => heading.text)
-      : [];
+    const preserved = [
+      ...(story ? headings.filter((heading) => heading.level === 1).map((heading) => heading.text) : []),
+      ...storyHeadlines,
+    ];
     if (construction) {
       for (const heading of headings) {
         if (
@@ -429,8 +445,8 @@ check("built pages match metadata, headings, links, and images", () => {
   const searchStatus = JSON.parse(readFileSync(path.join(dist, "pagefind", "status.json"), "utf8")) as {
     documents?: number;
   };
-  expect(searchStatus.documents === 0, "search index stays empty without published pages");
-  expect(!statExists(path.join(dist, "pagefind", "pagefind.js")), "empty index does not ship the search bundle");
+  expect((searchStatus.documents ?? 0) >= 1, "published pages enter search");
+  expect(statExists(path.join(dist, "pagefind", "pagefind.js")), "search bundle ships with published pages");
   const robots = readFileSync(path.join(dist, "robots.txt"), "utf8");
   if (construction) {
     expect(robots.includes("Disallow: /") && !robots.includes("Sitemap:"), "construction robots");
@@ -474,12 +490,16 @@ check("built pages match metadata, headings, links, and images", () => {
     origin?: string | null;
     records?: unknown[];
   };
-  expect(llms.includes("No news, research reports, country profiles, program records, or press releases are published."), "empty llms");
+  expect(llms.includes("Italy's Investor Demand Has Almost Tripled in the Past Two Years"), "llms lists the published article");
+  expect(!llms.includes("No news, research reports, country profiles, program records, or press releases are published."), "llms is no longer empty");
   expect(!site.origin ? !llms.includes("https://") : llms.includes(site.origin), "llms origin");
   expect(!llms.includes("Demonstration"), "llms omits drafts");
-  expect(index.origin === site.origin && Array.isArray(index.records) && index.records.length === 0, "empty content index");
+  expect(!llms.includes("design-preview") && !llms.includes("layout-preview"), "llms omits placeholders");
+  expect(index.origin === site.origin && Array.isArray(index.records) && index.records.length >= 1, "content index lists published records");
   expect(!JSON.stringify(index).includes("canonical"), "content index omits canonical");
-  expect(filesUnder(dist).filter((file) => file.endsWith(".md")).length === 0, "no article markdown");
+  const markdown = filesUnder(dist).filter((file) => file.endsWith(".md"));
+  expect(markdown.some((file) => file.includes("italy-investor-demand")), "article markdown is generated");
+  expect(markdown.every((file) => !readFileSync(file, "utf8").includes("design-preview")), "markdown omits placeholders");
 });
 
 function filesUnder(directory: string): string[] {

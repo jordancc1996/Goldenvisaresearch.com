@@ -31,6 +31,8 @@ const LeadTitle = titleLevel === 2 ? "h2" : "h1";
             {lead.hero && (
               <HomeFigure
                 hero={lead.hero}
+                href={lead.href}
+                label={lead.title}
                 video={Boolean(lead.video)}
                 priority
                 sizes="(min-width: 1024px) 760px, calc(100vw - 40px)"

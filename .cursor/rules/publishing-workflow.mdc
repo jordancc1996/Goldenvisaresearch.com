@@ -33,7 +33,7 @@ News, research reports, program articles, and press releases use one layout: `Ar
 
 The reading column stays at most 680px. On wide screens a sidebar sits beside the hero and body. It shows the author, then related coverage, and a table of contents only for reports. The sidebar is not sticky. Below the article, show more from the author, more on the topic, and more on the country only when those groups have eligible records.
 
-The newsletter module is inserted after the third top-level paragraph when the article has at least six paragraphs. Set `newsletter: false` to omit it, or `newsletterAfter` to move it. Do not place it inside a list, table, quotation, or figure. The module must not say that a subscription is stored unless `site.forms.newsletter` is configured.
+The article inquiry form is inserted after the third top-level paragraph when the article has at least six paragraphs. A shorter article gets the same form at the end of the body. Do not set `newsletter: false` on a published article. Set `newsletterAfter` only to move the form. Do not place it inside a list, table, quotation, or figure. Do not paste a second form into the article file. The form does not enroll the reader in a newsletter. It does not report that an inquiry was received unless `INQUIRY_FORM_ENDPOINT` is an approved https endpoint and that endpoint accepts the submission. The approved layout is `public/references/article-cta-reference.png`. Do not change that layout without explicit approval.
 
 Share links use a canonical URL. While `site.origin` is unset, the share controls stay preview-only. Do not add a tracking script for sharing.
 

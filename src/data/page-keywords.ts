@@ -109,6 +109,37 @@ export const keywordPages: KeywordPage[] = [
     exceptions: [],
   },
   {
+    path: "/news/italy-investor-demand",
+    keyword: "italy's investor demand",
+    intent: "informational",
+    h1: "Italy's Investor Demand Has Almost Tripled in the Past Two Years",
+    description:
+      "Italy's investor demand reached 279 applications by October 13, 2026, above the 229 filed in 2025. Americans filed more than all nationalities did in 2024.",
+    exceptions: [
+      {
+        location: "slug",
+        proposed: "The route is /news/italy-investor-demand. The apostrophe in Italy's is not used in the slug.",
+      },
+    ],
+  },
+  {
+    path: "/countries/italy",
+    keyword: "italy",
+    intent: "informational",
+    h1: "Italy",
+    description: "Italy has an investor visa for non-EU nationals. This profile does not restate an investment amount.",
+    exceptions: [],
+  },
+  {
+    path: "/authors/golden-visa-research",
+    keyword: "golden visa research",
+    intent: "informational",
+    h1: "Golden Visa Research",
+    description:
+      "Golden Visa Research publishes news and research on investment migration. This record is the publication, not a named journalist.",
+    exceptions: [],
+  },
+  {
     path: "/news/policy",
     keyword: "policy",
     intent: "informational",
@@ -422,6 +453,7 @@ const auditTitles = new Map<string, string>([
 export function expectedTitle(page: KeywordPage): string {
   if (page.path === "/") return "Golden Visa Research";
   if (page.path === "/newsletter") return "Newsletter - Golden Visa Research";
+  if (page.path === "/authors/golden-visa-research") return "Golden Visa Research";
   return auditTitles.get(page.path) ?? `${page.h1} - Golden Visa Research`;
 }
 

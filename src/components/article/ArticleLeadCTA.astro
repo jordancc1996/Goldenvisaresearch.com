@@ -1,0 +1,23 @@
+---
+import { inquiryFormHtml } from "../../lib/inquiry-markup";
+
+interface Props {
+  title?: string;
+  countries?: string[];
+  country?: string;
+  comparison?: boolean;
+  inquiryProgram?: string;
+}
+
+const { title = "", countries, country, comparison, inquiryProgram } = Astro.props;
+---
+
+<Fragment
+  set:html={inquiryFormHtml({
+    title,
+    countries,
+    country,
+    comparison,
+    inquiryProgram,
+  })}
+/>

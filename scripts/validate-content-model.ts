@@ -68,6 +68,8 @@ import { auditRegionCoverageFailures, auditRegionGaps } from "../src/lib/audit-r
 import { durationLabel, embedUrl } from "../src/lib/audit-video.ts";
 import { buildCoverage } from "../src/lib/article-coverage.ts";
 import { newsletterInsertIndex } from "../src/lib/newsletter-markup.ts";
+import { inquiryProgramFor, linkedInProfileUrl } from "../src/data/inquiry-programs.ts";
+import { inquiryOutcome } from "../src/lib/inquiry-outcome.ts";
 import {
   featuredStories,
   filterByProgramType,
@@ -652,7 +654,10 @@ check("forms stay closed and corrections stay empty", () => {
   expect(formResult(200, { ok: false }) === "error", "provider rejection");
   expect(formResult(422, { ok: true }) === "error", "failed status");
   expect(
-    site.forms.newsletter === null && site.forms.contact === null && site.forms.correction === null,
+    site.forms.newsletter === null &&
+      site.forms.contact === null &&
+      site.forms.correction === null &&
+      site.forms.inquiry === null,
     "no form endpoint",
   );
   const published = {
@@ -933,16 +938,24 @@ check("indexing follows the records a route displays", () => {
   expect(sectionIndexable("/topics/golden-visa", paired) && !sectionIndexable("/topics/residency-by-investment", paired), "program topic");
 
   const live = loadPublicationInventory();
+  expect(live.news.map((item) => item.id).join(",") === "italy-investor-demand", "published news");
+  expect(live.countries.map((item) => item.id).join(",") === "italy", "published country");
+  expect(live.authors.map((item) => item.id).join(",") === "golden-visa-research", "published author");
   expect(
-    live.news.length === 0 &&
-      live.reports.length === 0 &&
-      live.programs.length === 0 &&
-      live.countries.length === 0 &&
-      live.authors.length === 0 &&
-      live.press.length === 0,
-    "current drafts are not index records",
+    live.reports.length === 0 && live.programs.length === 0 && live.press.length === 0,
+    "drafts stay out of the index",
   );
-  expect(!routeIndexable("/news") && !routeIndexable("/newsletter") && !routeIndexable("/contact"), "live empty routes");
+  expect(routeIndexable("/news") && routeIndexable("/news/italy-investor-demand"), "published news routes");
+  expect(routeIndexable("/countries") && routeIndexable("/countries/italy"), "published country routes");
+  expect(routeIndexable("/authors/golden-visa-research"), "published author route");
+  expect(routeIndexable("/topics/residency-by-investment"), "topic with a published record");
+  expect(
+    !routeIndexable("/news/policy") &&
+      !routeIndexable("/topics/golden-visa") &&
+      !routeIndexable("/topics/citizenship-by-investment"),
+    "empty categories stay closed",
+  );
+  expect(!routeIndexable("/newsletter") && !routeIndexable("/contact"), "unconfigured forms");
   expect(routeIndexable("/") && routeIndexable("/corrections") && routeIndexable("/about"), "live trust routes");
   expect(!sectionIndexable("/press", empty) && !sectionIndexable("/press/layout-preview-release", empty), "press preview");
   const publishedPress = indexInventory({
@@ -1221,11 +1234,48 @@ check("editorial coverage and newsletter placement follow the shared rules", () 
   const paragraph = (index: number) => ({ type: "element", tagName: "p", value: String(index) });
   const six = [paragraph(1), paragraph(2), paragraph(3), paragraph(4), paragraph(5), paragraph(6)];
   expect(newsletterInsertIndex(six, { authors: ["editor"] }) === 3, "after the third paragraph");
-  expect(newsletterInsertIndex(six.slice(0, 2), { authors: ["editor"] }) === null, "short article");
+  expect(newsletterInsertIndex(six.slice(0, 2), { authors: ["editor"] }) === 2, "short article");
   expect(newsletterInsertIndex(six, { authors: ["editor"], newsletter: false }) === null, "override off");
   expect(newsletterInsertIndex(six, { name: "Portugal" }) === null, "country file");
   const split = [paragraph(1), paragraph(2), { type: "element", tagName: "ul" }, paragraph(3), paragraph(4), paragraph(5), paragraph(6)];
   expect(newsletterInsertIndex(split, { authors: ["editor"] }) === 4, "does not enter the list");
+});
+
+check("article inquiry selects one program and does not record success without an endpoint", () => {
+  expect(inquiryProgramFor({ countries: ["italy"] }) === "italy-investor-visa", "italy");
+  expect(inquiryProgramFor({ countries: ["italy", "portugal"] }) === "other", "several countries");
+  expect(inquiryProgramFor({ countries: ["portugal"] }) === "other", "portugal is two programs");
+  expect(inquiryProgramFor({ country: "greece" }) === "greece-golden-visa", "program record");
+  expect(inquiryProgramFor({ countries: ["italy"], comparison: true }) === "other", "comparison");
+  expect(
+    inquiryProgramFor({ countries: ["portugal"], inquiryProgram: "portugal-hqa" }) === "portugal-hqa",
+    "explicit program",
+  );
+  expect(inquiryProgramFor({ inquiryProgram: "not-a-program" }) === "other", "unknown program");
+  expect(linkedInProfileUrl("https://www.linkedin.com/in/yourprofile"), "linkedin");
+  expect(linkedInProfileUrl("https://www.linkedin.com/in/yourprofile/"), "linkedin slash");
+  expect(linkedInProfileUrl("https://linkedin.com/in/yourprofile"), "linkedin host");
+  expect(!linkedInProfileUrl("http://www.linkedin.com/in/yourprofile"), "linkedin https");
+  expect(!linkedInProfileUrl("https://www.linkedin.com/company/acme"), "linkedin company");
+  expect(!linkedInProfileUrl("https://example.com/in/yourprofile"), "other host");
+  expect(
+    inquiryOutcome({ endpoint: "" }).message === "This inquiry form is not configured. No message is sent.",
+    "unconfigured",
+  );
+  expect(
+    inquiryOutcome({ endpoint: "https://example.com", status: 200, payload: { ok: true } }).message ===
+      "Thank you for your interest. Your inquiry has been received.",
+    "accepted",
+  );
+  expect(
+    inquiryOutcome({ endpoint: "https://example.com", status: 422, payload: { ok: false } }).message ===
+      "We couldn't submit your inquiry. Please try again.",
+    "rejected",
+  );
+  expect(
+    inquiryOutcome({ endpoint: "https://example.com", thrown: true }).outcome === "error",
+    "network failure",
+  );
 });
 
 if (failed > 0) {

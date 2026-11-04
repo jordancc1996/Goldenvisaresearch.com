@@ -1,6 +1,7 @@
 import type { Root } from "hast";
 import type { HastContent, HastVisitorContext } from "satteri";
-import { newsletterElement, newsletterInsertIndex } from "../lib/newsletter-markup.ts";
+import { inquiryFormElement } from "../lib/inquiry-markup.ts";
+import { newsletterInsertIndex } from "../lib/newsletter-markup.ts";
 
 function marker(node: Root["children"][number]) {
   if (node.type === "element") {
@@ -29,6 +30,6 @@ export const articleNewsletterPlugin = {
     const frontmatter = (ctx.data as { astro?: { frontmatter?: Record<string, unknown> } }).astro?.frontmatter ?? {};
     const index = newsletterInsertIndex(root.children.map(marker), frontmatter);
     if (index === null) return;
-    ctx.insertChildAt(root, index, newsletterElement() as HastContent);
+    ctx.insertChildAt(root, index, inquiryFormElement(frontmatter) as HastContent);
   },
 };
